@@ -3,31 +3,80 @@ package msgspec
 import (
 	"time"
 	validator "gopkg.in/bluesuncorp/validator.v8"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type NewUser struct {
-	User
-	Password string `validate:"required"`
-}
-
-type UpdateUser struct {
-	ID string `validate:"required"`
-	User
-}
-
-
-type User struct {
-	Alias string `validate:"required"`
+	Alias string
 	FirstName string
 	LastName string
-	Email string `validate:"required"`
+	Email string
 	Password string
-	Role string `validate:"required"`
+	Role string
 	CreationTime time.Time
 	UpdateTime time.Time
 }
 
-func (u *User) Validate() map[string]*validator.FieldError {
+func(nU *NewUser) MapToEntity() (u *UserEntity) {
+	return &UserEntity{
+		Alias: nU.Alias,
+		FirstName: nU.FirstName,
+		LastName: nU.LastName,
+		Email: nU.Email,
+		Password: nU.Password,
+		Role: nU.Role,
+		CreationTime: nU.CreationTime,
+		UpdateTime: nU.UpdateTime,
+	}
+}
+
+func (u *NewUser) Validate() map[string]*validator.FieldError {
+	return V.Struct(u).(validator.ValidationErrors)
+}
+
+type UpdateUser struct {
+	ID string
+	Alias string
+	FirstName string
+	LastName string
+	Email string
+	Password string
+	Role string
+	CreationTime time.Time
+	UpdateTime time.Time
+}
+
+func(uU *UpdateUser) MapToEntity() (u *UserEntity) {
+	return &UserEntity{
+		Alias: uU.Alias,
+		FirstName: uU.FirstName,
+		LastName: uU.LastName,
+		Email: uU.Email,
+		Password: uU.Password,
+		Role: uU.Role,
+		CreationTime: uU.CreationTime,
+		UpdateTime: uU.UpdateTime,
+	}
+}
+
+func (u *UpdateUser) Validate() map[string]*validator.FieldError {
+	return V.Struct(u).(validator.ValidationErrors)
+}
+
+
+type UserEntity struct {
+	ID bson.ObjectId
+	Alias string
+	FirstName string
+	LastName string
+	Email string
+	Password string
+	Role string
+	CreationTime time.Time
+	UpdateTime time.Time
+}
+
+func (u *UserEntity) Validate() map[string]*validator.FieldError {
 	return V.Struct(u).(validator.ValidationErrors)
 }
 
