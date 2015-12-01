@@ -40,3 +40,24 @@ func (uM *DefaultUserModel) Create(nUser *msgspec.NewUser) (u *msgspec.UserEntit
 
 	return u, col.Insert(u)
 }
+
+func (uM *DefaultUserModel) Replace(uUser *msgspec.UpdateUser) (u *msgspec.UserEntity, err error) {
+	col, ses := uM.getSession()
+	defer ses.Close()
+
+	u = &msgspec.UserEntity{}
+
+	change := mgo.Change{
+		Update: bson.M{"$set": uUser.MapToEntity()},
+		ReturnNew: true,
+	}
+	_, err = col.Find(bson.M{"_id": uUser.ID}).Apply(change,u)
+	return
+}
+
+func (uM *DefaultUserModel) Delete(id bson.ObjectId) error {
+	col, ses := uM.getSession()
+	defer ses.Close()
+
+	return col.RemoveId(id)
+}

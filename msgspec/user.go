@@ -18,15 +18,17 @@ type NewUser struct {
 }
 
 func(nU *NewUser) MapToEntity() (u *UserEntity) {
+	var now = bson.Now()
 	return &UserEntity{
+		ID: bson.NewObjectId(),
 		Alias: nU.Alias,
 		FirstName: nU.FirstName,
 		LastName: nU.LastName,
 		Email: nU.Email,
 		Password: nU.Password,
 		Role: nU.Role,
-		CreationTime: nU.CreationTime,
-		UpdateTime: nU.UpdateTime,
+		CreationTime: now,
+		UpdateTime: now,
 	}
 }
 
@@ -42,11 +44,11 @@ type UpdateUser struct {
 	Email string
 	Password string
 	Role string
-	CreationTime time.Time
 	UpdateTime time.Time
 }
 
 func(uU *UpdateUser) MapToEntity() (u *UserEntity) {
+	var now = bson.Now()
 	return &UserEntity{
 		Alias: uU.Alias,
 		FirstName: uU.FirstName,
@@ -54,8 +56,7 @@ func(uU *UpdateUser) MapToEntity() (u *UserEntity) {
 		Email: uU.Email,
 		Password: uU.Password,
 		Role: uU.Role,
-		CreationTime: uU.CreationTime,
-		UpdateTime: uU.UpdateTime,
+		UpdateTime: now,
 	}
 }
 
@@ -65,12 +66,12 @@ func (u *UpdateUser) Validate() map[string]*validator.FieldError {
 
 
 type UserEntity struct {
-	ID bson.ObjectId
+	ID bson.ObjectId `bson:"_id,omitempty"`
 	Alias string
 	FirstName string
 	LastName string
 	Email string
-	Password string
+	Password string `bson:"omitempty"`
 	Role string
 	CreationTime time.Time
 	UpdateTime time.Time
