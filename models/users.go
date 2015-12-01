@@ -7,57 +7,65 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+const (
+	collection = "users"
+)
+
 type UserModel interface {
 	Find(bson.ObjectId) (*msgspec.UserEntity, error)
-	FindMany() ([]*msgspec.UserEntity, error)
+	FindMany(query map[string]string, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUser) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUser) (*msgspec.UserEntity, error)
 	Delete(bson.ObjectId) error
 }
 
 type DefaultUserModel struct {
+	Session *mgo.Session
 }
 
-func (uM *DefaultUserModel) getSession() (*mgo.Collection, *mgo.Session) {
-	mSess := mongo.Conn()
-	return mSess.DB("").C("users"), mSess
+func NewDefaultUserModel() *DefaultUserModel {
+	return &DefaultUserModel{mongo.Conn()}
+}
+
+func (uM *DefaultUserModel) col() *mgo.Collection{
+	return uM.Session.DB("").C(collection)
 }
 
 func (uM *DefaultUserModel) Find(id bson.ObjectId) (u *msgspec.UserEntity, err error) {
-	col, ses := uM.getSession()
-	defer ses.Close()
-
 	u = &msgspec.UserEntity{}
-	q := col.FindId(id).One(u)
+	q := uM.col().FindId(id).One(u)
 	return u, q
 }
 
 func (uM *DefaultUserModel) Create(nUser *msgspec.NewUser) (u *msgspec.UserEntity, err error) {
-	col, ses := uM.getSession()
-	defer ses.Close()
-
 	u = nUser.MapToEntity()
-
-	return u, col.Insert(u)
+	return u, uM.col().Insert(u)
 }
 
-func (uM *DefaultUserModel) Replace(uUser *msgspec.UpdateUser) (u *msgspec.UserEntity, err error) {
-	col, ses := uM.getSession()
-	defer ses.Close()
 
-	u = &msgspec.UserEntity{}
+func (uM *DefaultUserModel) Replace(updUser *msgspec.UpdateUser) (u *msgspec.UserEntity, err error) {
+	u = updUser.MapToEntity()
+	var id = u.ID
+	u.ID = ""
 
 	change := mgo.Change{
-		Update: bson.M{"$set": uUser.MapToEntity()},
+		Update: bson.M{"$set": u},
 		ReturnNew: true,
 	}
-	_, err = col.Find(bson.M{"_id": uUser.ID}).Apply(change,u)
+	_, err = uM.col().Find(bson.M{"_id": id}).Apply(change,u)
 	return
 }
 
 func (uM *DefaultUserModel) Delete(id bson.ObjectId) error {
-	col, ses := uM.getSession()
-	defer ses.Close()
+	return uM.col().RemoveId(id)
+}
 
-	return col.RemoveId(id)
+func (uM *DefaultUserModel) FindMany(query map[string]string, sortBy []string, offset int, limit int) ( []*msgspec.UserEntity, error ) {
+	var (
+		err error
+		result = make([]*msgspec.UserEntity, 0)
+
+	)
+	err = mongo.GetAll(uM.col(), query, []string{}, sortBy, offset, limit, result)
+	return result, err
 }

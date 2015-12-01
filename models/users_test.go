@@ -3,58 +3,30 @@ import (
 	"testing"
 	"github.com/byrnedo/usersvc/msgspec"
 	"reflect"
-	"github.com/byrnedo/apibase/db/mongo"
 	. "github.com/byrnedo/apibase/logger"
+	"github.com/byrnedo/apibase/db/mongo"
 )
-
 
 func TestMain(m *testing.M){
 
 	InitLog(func(o *LogOptions){ o.Level = InfoLevel})
-	mongo.Init("mongodb://localhost:27017/test_usersvc", Info)
+	mongo.Init("mongodb://localhost:27017/test_mongo_model", Trace)
 
 	m.Run()
 
 	c := mongo.Conn()
 	defer c.Close()
 
-	c.DB("test_usersvc").DropDatabase()
+	c.DB("test_mongo_model").DropDatabase()
 }
 
-func TestCreateUser(t *testing.T) {
-	m := DefaultUserModel{}
+func TestInsertUpdateDelete(t *testing.T) {
+	m := NewDefaultUserModel()
+	defer m.Session.Close()
 
 	user, err := m.Create(&msgspec.NewUser{
-		FirstName: "Test",
-		LastName: "User",
-	})
-
-	if err != nil {
-		t.Error("Failed to insert:" + err.Error())
-	}
-
-	col, ses := m.getSession()
-	defer ses.Close()
-
-	foundUser := msgspec.UserEntity{}
-	err = col.FindId(user.ID).One(&foundUser)
-	if err != nil {
-		t.Error("Failed to find:" + err.Error())
-	}
-
-	if reflect.DeepEqual(user, &foundUser) == false {
-		t.Errorf("Did not match\nexpected:%+v\n   found:%+v\n", user, foundUser)
-	}
-
-}
-
-func TestFindUser(t *testing.T) {
-
-	m := DefaultUserModel{}
-
-	user, err := m.Create(&msgspec.NewUser{
-		FirstName: "Test",
-		LastName: "User",
+		FirstName: "test",
+		LastName: "user",
 	})
 
 	if err != nil {
@@ -62,30 +34,36 @@ func TestFindUser(t *testing.T) {
 	}
 
 	foundUser, err := m.Find(user.ID)
-	if err != nil {
-		t.Error("Failed to find:" + err.Error())
-	}
 
 	if reflect.DeepEqual(user, foundUser) == false {
-		t.Errorf("Did not match\nexpected:%+v\n   found:%+v\n", user, foundUser)
+		t.Error("Did not match\nexpected:%+v\n   found:%+v\n",user, foundUser)
 	}
-}
 
-func TestDeleteUser(t *testing.T) {
-	m := DefaultUserModel{}
-
-	user, err := m.Create(&msgspec.NewUser{
-		FirstName: "Test",
-		LastName: "User",
+	updUser, err := m.Replace(&msgspec.UpdateUser{
+		ID: user.ID.Hex(),
+		FirstName: "test",
+		LastName: "user",
+		Alias:"testy",
 	})
 
 	if err != nil {
-		t.Error("Failed to insert:" + err.Error())
+		t.Error("Failed to update:" + err.Error())
+	}
+
+	if updUser.CreationTime != user.CreationTime {
+		t.Errorf("Creation time has changed %s -> %s", user.CreationTime, updUser.CreationTime)
+	}
+
+	if updUser.UpdateTime.After(user.UpdateTime) == false {
+		t.Errorf("Update time is not after insert time: %s -> %s", user.UpdateTime, updUser.UpdateTime)
 	}
 
 	err = m.Delete(user.ID)
-	if err != nil {
-		t.Error("Failed to delete:" + err.Error())
+	if err !=  nil {
+		t.Error("Failed to delete user:" +err.Error())
 	}
+}
+
+func TestFind(t *testing.T){
 
 }
