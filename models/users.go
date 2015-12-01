@@ -1,5 +1,6 @@
 package models
 import (
+
 	"gopkg.in/mgo.v2/bson"
 	"github.com/byrnedo/usersvc/msgspec"
 	"github.com/byrnedo/apibase/db/mongo"

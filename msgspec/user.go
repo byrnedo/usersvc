@@ -76,7 +76,4 @@ type UserEntity struct {
 	UpdateTime time.Time
 }
 
-func (u *UserEntity) Validate() map[string]*validator.FieldError {
-	return V.Struct(u).(validator.ValidationErrors)
-}
 
