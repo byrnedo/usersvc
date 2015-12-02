@@ -5,6 +5,7 @@ import (
 	"reflect"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/db/mongo"
+	"time"
 )
 
 func TestMain(m *testing.M){
@@ -20,9 +21,7 @@ func TestMain(m *testing.M){
 	c.DB("test_mongo_model").DropDatabase()
 }
 
-func TestInsertUpdateDelete(t *testing.T) {
-	m := NewDefaultUserModel()
-	defer m.Session.Close()
+func createUser(m UserModel, t *testing.T) *msgspec.UserEntity {
 
 	user, err := m.Create(&msgspec.NewUser{
 		FirstName: "test",
@@ -32,6 +31,15 @@ func TestInsertUpdateDelete(t *testing.T) {
 	if err != nil {
 		t.Error("Failed to insert:" + err.Error())
 	}
+	time.Sleep(10*time.Millisecond)
+	return user
+}
+
+func TestModel(t *testing.T) {
+	m := NewDefaultUserModel()
+	defer m.Session.Close()
+
+	user := createUser(m, t)
 
 	foundUser, err := m.Find(user.ID)
 
@@ -62,8 +70,32 @@ func TestInsertUpdateDelete(t *testing.T) {
 	if err !=  nil {
 		t.Error("Failed to delete user:" +err.Error())
 	}
-}
 
-func TestFind(t *testing.T){
+	var users = []*msgspec.UserEntity {
+		createUser(m, t),
+		createUser(m, t),
+		createUser(m, t),
+	}
+
+	res, err := m.FindMany(nil, []string{"-creationtime"}, 0,10)
+	if err != nil {
+		t.Error("Failed to find many:" + err.Error())
+	}
+	if len(res) != 3 {
+		t.Errorf("Got %d results, expected 3\n", len(res))
+	}
+
+	res, err = m.FindMany(nil, []string{"-creationtime"}, 0,1)
+	if err != nil {
+		t.Error("Failed to find many:" + err.Error())
+	}
+
+	if len(res)!= 1 {
+		t.Errorf("Got %d results, expected 1\n", len(res))
+	}
+
+	if res[0].ID != users[2].ID {
+		t.Errorf("Not the user, \nexpected: %+v\n   found: %+v", users[2], res[0])
+	}
 
 }

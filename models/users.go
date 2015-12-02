@@ -13,7 +13,7 @@ const (
 
 type UserModel interface {
 	Find(bson.ObjectId) (*msgspec.UserEntity, error)
-	FindMany(query map[string]string, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
+	FindMany(query map[string]interface{}, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUser) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUser) (*msgspec.UserEntity, error)
 	Delete(bson.ObjectId) error
@@ -60,12 +60,13 @@ func (uM *DefaultUserModel) Delete(id bson.ObjectId) error {
 	return uM.col().RemoveId(id)
 }
 
-func (uM *DefaultUserModel) FindMany(query map[string]string, sortBy []string, offset int, limit int) ( []*msgspec.UserEntity, error ) {
+func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []string, offset int, limit int) ( []*msgspec.UserEntity, error ) {
 	var (
 		err error
 		result = make([]*msgspec.UserEntity, 0)
 
 	)
-	err = mongo.GetAll(uM.col(), query, []string{}, sortBy, offset, limit, result)
+	mongo.ConvertObjectIds(query)
+	err = uM.col().Find(query).Skip(offset).Limit(limit).Sort(sortBy...).All(&result)
 	return result, err
 }
