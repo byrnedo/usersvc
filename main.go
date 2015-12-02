@@ -37,7 +37,7 @@ func main() {
 
 	routers.InitMq(natsCon)
 
-	webRouter := routers.InitWeb()
+	routers.InitWeb()
 
 	host = apibase.Conf.GetDefaultString("http.host", "localhost")
 	if port, err = env.GetOrInt("PORT", apibase.Conf.GetDefaultInt("http.port", 9999)); err != nil {
@@ -46,5 +46,5 @@ func main() {
 
 	var listenAddr = fmt.Sprintf("%s:%d", host, port)
 	Info.Printf("listening on " + listenAddr)
-	http.ListenAndServe(listenAddr, webRouter)
+	http.ListenAndServe(listenAddr, nil)
 }

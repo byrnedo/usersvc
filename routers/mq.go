@@ -7,7 +7,7 @@ import (
 )
 
 func InitMq(natsCon *natsio.Nats) {
-	controllers.SubscribeNatsRoutes(natsCon, mq.NewHealthcheckController(natsCon.EncCon))
-	controllers.SubscribeNatsRoutes(natsCon, mq.NewUsersController(natsCon.EncCon))
+	controllers.SubscribeNatsRoutes(natsCon, "user_svc_worker", mq.NewHealthcheckController(natsCon.EncCon))
+	controllers.SubscribeNatsRoutes(natsCon, "user_svc_worker", mq.NewUsersController(natsCon.EncCon))
 }
 
