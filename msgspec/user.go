@@ -4,9 +4,26 @@ import (
 	"time"
 	validator "gopkg.in/bluesuncorp/validator.v8"
 	"gopkg.in/mgo.v2/bson"
+	encBson "github.com/maxwellhealth/encryptedbson"
+	"golang.org/x/crypto/bcrypt"
+	"errors"
 )
 
-type NewUser struct {
+const (
+	bcryptCost = 10
+)
+
+func encryptPassword(pass string) (string, error) {
+
+	password, err := bcrypt.GenerateFromPassword([]byte(pass), bcryptCost)
+	if err != nil {
+		return "", errors.New("Failed to encrypt:" + err.Error())
+	}
+	return string(password), nil
+
+}
+
+type NewUserDTO struct {
 	Alias string
 	FirstName string
 	LastName string
@@ -17,26 +34,32 @@ type NewUser struct {
 	UpdateTime time.Time
 }
 
-func(nU *NewUser) MapToEntity() (u *UserEntity) {
+func(nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
 	var now = bson.Now()
+	var err error
+
+	if nU.Password, err = encryptPassword(nU.Password); err != nil {
+		return nil,err
+	}
+
 	return &UserEntity{
 		ID: bson.NewObjectId(),
 		Alias: nU.Alias,
-		FirstName: nU.FirstName,
-		LastName: nU.LastName,
+		FirstName: encBson.EncryptedString(nU.FirstName),
+		LastName: encBson.EncryptedString(nU.LastName),
 		Email: nU.Email,
 		Password: nU.Password,
 		Role: nU.Role,
 		CreationTime: now,
 		UpdateTime: now,
-	}
+	}, nil
 }
 
-func (u *NewUser) Validate() map[string]*validator.FieldError {
+func (u *NewUserDTO) Validate() map[string]*validator.FieldError {
 	return V.Struct(u).(validator.ValidationErrors)
 }
 
-type UpdateUser struct {
+type UpdateUserDTO struct {
 	ID string
 	Alias string
 	FirstName string
@@ -48,20 +71,27 @@ type UpdateUser struct {
 	UpdateTime time.Time
 }
 
-func(uU *UpdateUser) MapToEntity() (u *UserEntity) {
+func(uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
+
+	var err error
+	if len(uU.Password) > 0 {
+		if uU.Password, err = encryptPassword(uU.Password); err != nil {
+			return nil,err
+		}
+	}
 	return &UserEntity{
 		ID: bson.ObjectIdHex(uU.ID),
 		Alias: uU.Alias,
-		FirstName: uU.FirstName,
-		LastName: uU.LastName,
+		FirstName: encBson.EncryptedString(uU.FirstName),
+		LastName: encBson.EncryptedString(uU.LastName),
 		Email: uU.Email,
 		Password: uU.Password,
 		Role: uU.Role,
 		UpdateTime: bson.Now(),
-	}
+	}, nil
 }
 
-func (u *UpdateUser) Validate() map[string]*validator.FieldError {
+func (u *UpdateUserDTO) Validate() map[string]*validator.FieldError {
 	return V.Struct(u).(validator.ValidationErrors)
 }
 
@@ -69,8 +99,8 @@ func (u *UpdateUser) Validate() map[string]*validator.FieldError {
 type UserEntity struct {
 	ID bson.ObjectId `bson:"_id,omitempty"`
 	Alias string
-	FirstName string
-	LastName string
+	FirstName encBson.EncryptedString
+	LastName encBson.EncryptedString
 	Email string
 	Password string `bson:"password,omitempty"`
 	Role string

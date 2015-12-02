@@ -10,15 +10,10 @@ import (
 	"github.com/byrnedo/apibase/db/mongo"
 	"github.com/byrnedo/apibase/natsio"
 	"time"
+	encBson "github.com/maxwellhealth/encryptedbson"
 )
 
-func main() {
-
-	var (
-		host string
-		port int
-		err error
-	)
+func init() {
 
 	apibase.Init()
 
@@ -35,9 +30,25 @@ func main() {
 		panic("Failed to connect to nats:" + err.Error())
 	}
 
+	encryptionKey, err := apibase.Conf.GetString("encryption-key")
+	if err != nil {
+		panic("Failed to get encryption-key:"+err.Error())
+	}
+	copy(encBson.EncryptionKey[:], encryptionKey)
+
 	routers.InitMq(natsCon)
 
 	routers.InitWeb()
+
+}
+
+func main() {
+
+	var (
+		host string
+		port int
+		err error
+	)
 
 	host = apibase.Conf.GetDefaultString("http.host", "localhost")
 	if port, err = env.GetOrInt("PORT", apibase.Conf.GetDefaultInt("http.port", 9999)); err != nil {

@@ -13,17 +13,17 @@ func TestMain(m *testing.M){
 	InitLog(func(o *LogOptions){ o.Level = InfoLevel})
 	mongo.Init("mongodb://localhost:27017/test_mongo_model", Trace)
 
+	c := mongo.Conn()
+	c.DB("test_mongo_model").DropDatabase()
+	defer c.Close()
 	m.Run()
 
-	c := mongo.Conn()
-	defer c.Close()
 
-	c.DB("test_mongo_model").DropDatabase()
 }
 
 func createUser(m UserModel, t *testing.T) *msgspec.UserEntity {
 
-	user, err := m.Create(&msgspec.NewUser{
+	user, err := m.Create(&msgspec.NewUserDTO{
 		FirstName: "test",
 		LastName: "user",
 	})
@@ -43,11 +43,13 @@ func TestModel(t *testing.T) {
 
 	foundUser, err := m.Find(user.ID)
 
+	t.Logf("%+v", foundUser)
+
 	if reflect.DeepEqual(user, foundUser) == false {
 		t.Error("Did not match\nexpected:%+v\n   found:%+v\n",user, foundUser)
 	}
 
-	updUser, err := m.Replace(&msgspec.UpdateUser{
+	updUser, err := m.Replace(&msgspec.UpdateUserDTO{
 		ID: user.ID.Hex(),
 		FirstName: "test",
 		LastName: "user",

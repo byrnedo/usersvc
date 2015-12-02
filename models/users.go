@@ -1,6 +1,5 @@
 package models
 import (
-
 	"gopkg.in/mgo.v2/bson"
 	"github.com/byrnedo/usersvc/msgspec"
 	"github.com/byrnedo/apibase/db/mongo"
@@ -14,13 +13,17 @@ const (
 type UserModel interface {
 	Find(bson.ObjectId) (*msgspec.UserEntity, error)
 	FindMany(query map[string]interface{}, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
-	Create(*msgspec.NewUser) (*msgspec.UserEntity, error)
-	Replace(*msgspec.UpdateUser) (*msgspec.UserEntity, error)
+	Create(*msgspec.NewUserDTO) (*msgspec.UserEntity, error)
+	Replace(*msgspec.UpdateUserDTO) (*msgspec.UserEntity, error)
 	Delete(bson.ObjectId) error
 }
 
 type DefaultUserModel struct {
 	Session *mgo.Session
+}
+
+func init() {
+
 }
 
 func NewDefaultUserModel() *DefaultUserModel {
@@ -37,14 +40,19 @@ func (uM *DefaultUserModel) Find(id bson.ObjectId) (u *msgspec.UserEntity, err e
 	return u, q
 }
 
-func (uM *DefaultUserModel) Create(nUser *msgspec.NewUser) (u *msgspec.UserEntity, err error) {
-	u = nUser.MapToEntity()
+func (uM *DefaultUserModel) Create(nUser *msgspec.NewUserDTO) (u *msgspec.UserEntity, err error) {
+	if u, err = nUser.MapToEntity(); err != nil {
+		return
+	}
+
 	return u, uM.col().Insert(u)
 }
 
 
-func (uM *DefaultUserModel) Replace(updUser *msgspec.UpdateUser) (u *msgspec.UserEntity, err error) {
-	u = updUser.MapToEntity()
+func (uM *DefaultUserModel) Replace(updUser *msgspec.UpdateUserDTO) (u *msgspec.UserEntity, err error) {
+	if u, err = updUser.MapToEntity(); err != nil {
+		return
+	}
 	var id = u.ID
 	u.ID = ""
 
