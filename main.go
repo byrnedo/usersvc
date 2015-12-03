@@ -51,7 +51,7 @@ func main() {
 	)
 
 	host = apibase.Conf.GetDefaultString("http.host", "localhost")
-	if port, err = env.GetOrInt("PORT", apibase.Conf.GetDefaultInt("http.port", 9999)); err != nil {
+	if port, err = env.GetOrInt("PORT", int(apibase.Conf.GetDefaultInt("http.port", 9999))); err != nil {
 		panic(err.Error())
 	}
 
