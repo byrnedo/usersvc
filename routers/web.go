@@ -7,21 +7,16 @@ import (
 	"net/http"
 	"github.com/justinas/alice"
 	//"github.com/ulule/limiter"
+	"github.com/byrnedo/apibase/middleware"
 )
 
 func InitWeb() {
 	var rtr = mux.NewRouter().StrictSlash(true)
-	controllers.RegisterMuxRoutes(rtr, &web.UsersController{})
+	controllers.RegisterMuxRoutes(rtr, web.NewUsersController())
 
 	//alice is a tiny package to chain middlewares.
-	mChain := alice.New(Middleware).Then(rtr)
+	mChain := alice.New(middleware.LogTime).Then(rtr)
 
 	http.Handle("/", mChain)
-}
-
-func Middleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
-	})
 }
 

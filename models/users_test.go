@@ -36,10 +36,10 @@ func TestMain(m *testing.M){
 	setupContainer()
 
 	InitLog(func(o *LogOptions){ o.Level = InfoLevel})
-	mongo.Init("mongodb://localhost:"+MongoPort+"/test_mongo_model", Trace)
+	mongo.Init("mongodb://localhost:"+MongoPort+"/test_users", Trace)
 
 	c := mongo.Conn()
-	c.DB("test_mongo_model").DropDatabase()
+	c.DB("test_users").DropDatabase()
 	defer c.Close()
 	m.Run()
 

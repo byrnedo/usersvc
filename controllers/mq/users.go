@@ -6,6 +6,7 @@ import (
 	"github.com/byrnedo/usersvc/models"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
+"github.com/apcera/nats"
 )
 
 type UsersController struct {
@@ -26,6 +27,18 @@ func NewUsersController(nc *natsio.Nats) (pC *UsersController) {
 	pC.natsCon = nc
 	pC.userModel = models.NewDefaultUserModel()
 	return
+}
+
+func (c *UsersController) Find(m *nats.Msg) {
+}
+
+func (c *UsersController) Create(m *nats.Msg) {
+}
+
+func (c *UsersController) Update(m *nats.Msg) {
+}
+
+func (c *UsersController) Delete(m *nats.Msg) {
 }
 
 func (c *UsersController) Authenticate(subj string, reply string, data *mq.AuthenticateUserRequest) {

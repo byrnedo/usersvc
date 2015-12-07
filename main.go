@@ -17,11 +17,14 @@ func init() {
 
 	apibase.Init()
 
-	mongo.Init(env.GetOr("MONGO_URL", apibase.Conf.GetDefaultString("mongo.url", "")), Trace)
+	mongoUrl := env.GetOr("MONGO_URL", apibase.Conf.GetDefaultString("mongo.url", ""))
+	Info.Println("Attempting to connect to [" + mongoUrl + "]")
+
+	mongo.Init(mongoUrl, Trace)
 
 	natsOpts := natsio.NewNatsOptions(func(n *natsio.NatsOptions) error {
-
 		n.Url = env.GetOr("NATS_URL", apibase.Conf.GetDefaultString("nats.url", "nats://localhost:4222"))
+		Info.Println("Attempting to connect to [" + n.Url + "]")
 		n.Timeout = 10 * time.Second
 		if appName, err := apibase.Conf.GetString("app-name"); err == nil && len(appName) > 0 {
 			n.Name = appName
@@ -41,7 +44,7 @@ func init() {
 
 	encryptionKey, err := apibase.Conf.GetString("encryption-key")
 	if err != nil {
-		panic("Failed to get encryption-key:"+err.Error())
+		panic("Failed to get encryption-key:" + err.Error())
 	}
 	copy(encBson.EncryptionKey[:], encryptionKey)
 
@@ -66,5 +69,7 @@ func main() {
 
 	var listenAddr = fmt.Sprintf("%s:%d", host, port)
 	Info.Printf("listening on " + listenAddr)
-	http.ListenAndServe(listenAddr, nil)
+	if err = http.ListenAndServe(listenAddr, nil); err != nil {
+		panic("Failed to start server:" + err.Error())
+	}
 }

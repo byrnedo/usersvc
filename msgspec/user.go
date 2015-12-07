@@ -35,8 +35,10 @@ type NewUserDTO struct {
 }
 
 func(nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
-	var now = bson.Now()
-	var err error
+	var (
+		now = bson.Now()
+		err error
+	)
 
 	if nU.Password, err = encryptPassword(nU.Password); err != nil {
 		return nil,err
