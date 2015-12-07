@@ -5,12 +5,12 @@ import (
 	"github.com/byrnedo/apibase"
 	"net/http"
 	"fmt"
-	"github.com/byrnedo/apibase/env"
 	"github.com/byrnedo/usersvc/routers"
 	"github.com/byrnedo/apibase/db/mongo"
 	"github.com/byrnedo/apibase/natsio"
 	"time"
 	encBson "github.com/maxwellhealth/encryptedbson"
+	"github.com/byrnedo/apibase/helpers/env"
 )
 
 func init() {
@@ -20,8 +20,17 @@ func init() {
 	mongo.Init(env.GetOr("MONGO_URL", apibase.Conf.GetDefaultString("mongo.url", "")), Trace)
 
 	natsOpts := natsio.NewNatsOptions(func(n *natsio.NatsOptions) error {
+
 		n.Url = env.GetOr("NATS_URL", apibase.Conf.GetDefaultString("nats.url", "nats://localhost:4222"))
 		n.Timeout = 10 * time.Second
+		if appName, err := apibase.Conf.GetString("app-name"); err == nil && len(appName) > 0 {
+			n.Name = appName
+		} else {
+			panic("must set app-name in conf.")
+		}
+
+		Trace.Printf("Nats Opts: %+v", n)
+
 		return nil
 	})
 

@@ -3,6 +3,7 @@ package mq
 import (
 	r "github.com/byrnedo/apibase/routes"
 	"github.com/apcera/nats"
+	"github.com/byrnedo/usersvc/msgspec/mq"
 )
 
 type UsersController struct {
@@ -10,12 +11,10 @@ type UsersController struct {
 	encCon *nats.EncodedConn
 }
 
+
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
 	return []*r.NatsRoute{
-		r.NewNatsRoute("user.users.get", c.List),
-		r.NewNatsRoute("user.users.create", c.List),
-		r.NewNatsRoute("user.users.update", c.List),
-		r.NewNatsRoute("user.users.delete", c.List),
+		r.NewNatsRoute(mq.AuthenticateUserSubject, c.Authenticate),
 	}
 }
 
@@ -25,6 +24,6 @@ func NewUsersController(nc *nats.EncodedConn) (pC *UsersController) {
 	return
 }
 
-func (c *UsersController) List(m *nats.Msg) {
-	c.encCon.Publish(m.Reply, "Not implemented")
+func (c *UsersController) Authenticate(subj string, reply string, data *mq.AuthenticateUserRequest) {
+	c.encCon.Publish(reply, "Not implemented")
 }
