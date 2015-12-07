@@ -10,3 +10,8 @@ type AuthenticateUserRequest struct {
 	User string
 	Password string
 }
+
+type AuthenticateUserResponse struct {
+	natsio.NatsDTO
+	Authenticated bool
+}

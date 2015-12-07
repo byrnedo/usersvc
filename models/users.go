@@ -4,6 +4,7 @@ import (
 	"github.com/byrnedo/usersvc/msgspec"
 	"github.com/byrnedo/apibase/db/mongo"
 	"gopkg.in/mgo.v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -15,6 +16,7 @@ type UserModel interface {
 	FindMany(query map[string]interface{}, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUserDTO) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUserDTO) (*msgspec.UserEntity, error)
+	Authenticate(email string, password string) (bool, error)
 	Delete(bson.ObjectId) error
 }
 
@@ -77,4 +79,15 @@ func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []stri
 	mongo.ConvertObjectIds(query)
 	err = uM.col().Find(query).Skip(offset).Limit(limit).Sort(sortBy...).All(&result)
 	return result, err
+}
+
+func (uM *DefaultUserModel) Authenticate(email string, password string) (bool, error) {
+	var user = &msgspec.UserEntity{}
+	if err := uM.col().Find(bson.M{"email": email}).One(user); err != nil {
+		return false, err
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return false, err
+	}
+	return true, nil
 }
