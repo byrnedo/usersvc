@@ -16,7 +16,7 @@ type UserModel interface {
 	FindMany(query map[string]interface{}, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUserDTO) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUserDTO) (*msgspec.UserEntity, error)
-	Authenticate(email string, password string) (bool, error)
+	Authenticate(email string, password string) bool
 	Delete(bson.ObjectId) error
 }
 
@@ -81,13 +81,13 @@ func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []stri
 	return result, err
 }
 
-func (uM *DefaultUserModel) Authenticate(email string, password string) (bool, error) {
+func (uM *DefaultUserModel) Authenticate(email string, password string) bool {
 	var user = &msgspec.UserEntity{}
 	if err := uM.col().Find(bson.M{"email": email}).One(user); err != nil {
-		return false, err
+		return false
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }

@@ -1,17 +1,42 @@
 package models
 import (
+
 	"testing"
 	"github.com/byrnedo/usersvc/msgspec"
 	"reflect"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/db/mongo"
 	"time"
+	"github.com/byrnedo/apibase/dockertest"
+	gDoc "github.com/fsouza/go-dockerclient"
 )
+
+const(
+	MongoImage = "mongo:latest"
+	MongoPort = "28017"
+)
+
+func setupContainer() {
+
+	if id, err := dockertest.Running(MongoImage); err != nil || len(id) < 1 {
+		if _, err := dockertest.Start(MongoImage, map[gDoc.Port][]gDoc.PortBinding{
+			"27017/tcp" : []gDoc.PortBinding{gDoc.PortBinding{
+				HostIP: "127.0.0.1",
+				HostPort: MongoPort,
+			}},
+		}); err != nil {
+			panic("Error starting postgres:" + err.Error())
+		}
+
+	}
+}
 
 func TestMain(m *testing.M){
 
+	setupContainer()
+
 	InitLog(func(o *LogOptions){ o.Level = InfoLevel})
-	mongo.Init("mongodb://localhost:27017/test_mongo_model", Trace)
+	mongo.Init("mongodb://localhost:"+MongoPort+"/test_mongo_model", Trace)
 
 	c := mongo.Conn()
 	c.DB("test_mongo_model").DropDatabase()
@@ -53,6 +78,8 @@ func TestModel(t *testing.T) {
 		ID: user.ID.Hex(),
 		FirstName: "test",
 		LastName: "user",
+		Email: "email",
+		Password: "password",
 		Alias:"testy",
 	})
 
@@ -66,6 +93,23 @@ func TestModel(t *testing.T) {
 
 	if updUser.UpdateTime.After(user.UpdateTime) == false {
 		t.Errorf("Update time is not after insert time: %s -> %s", user.UpdateTime, updUser.UpdateTime)
+	}
+
+
+	valid := m.Authenticate("email", "password")
+
+	if valid == false {
+		t.Error("Authenticate returned false")
+	}
+
+	valid = m.Authenticate("email", "password2")
+	if valid == true {
+		t.Error("Bad Authenticate returned true")
+	}
+
+	valid = m.Authenticate("gmail", "password2")
+	if valid == true {
+		t.Error("Bad Authenticate returned true")
 	}
 
 	err = m.Delete(user.ID)

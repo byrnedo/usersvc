@@ -29,13 +29,9 @@ func NewUsersController(nc *natsio.Nats) (pC *UsersController) {
 }
 
 func (c *UsersController) Authenticate(subj string, reply string, data *mq.AuthenticateUserRequest) {
-	valid, err := c.userModel.Authenticate(data.User, data.Password)
-	if err != nil {
-		Error.Println("Error on login:" + err.Error())
-	}
-
+	valid:= c.userModel.Authenticate(data.User, data.Password)
 	response := mq.AuthenticateUserResponse{
-		NatsDTO: natsio.NatsDTO{NatsCtx: &data.NatsCtx},
+		NatsDTO: natsio.NatsDTO{NatsCtx: data.NatsCtx},
 		Authenticated: valid,
 	}
 
