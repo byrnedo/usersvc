@@ -35,6 +35,7 @@ func (c *UsersController) Authenticate(subj string, reply string, data *mq.Authe
 	}
 
 	response := mq.AuthenticateUserResponse{
+		NatsDTO: natsio.NatsDTO{NatsCtx: &data.NatsCtx},
 		Authenticated: valid,
 	}
 
