@@ -7,6 +7,7 @@ import (
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
 	"errors"
+	"github.com/byrnedo/apibase/validate"
 )
 
 const (
@@ -57,8 +58,8 @@ func(nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
 	}, nil
 }
 
-func (u *NewUserDTO) Validate() map[string]*validator.FieldError {
-	return V.Struct(u).(validator.ValidationErrors)
+func (u *NewUserDTO) Validate() validator.ValidationErrors {
+	return validate.ValidateStruct(u)
 }
 
 type UpdateUserDTO struct {
@@ -93,8 +94,8 @@ func(uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
 	}, nil
 }
 
-func (u *UpdateUserDTO) Validate() map[string]*validator.FieldError {
-	return V.Struct(u).(validator.ValidationErrors)
+func (u *UpdateUserDTO) Validate() validator.ValidationErrors {
+	return validate.ValidateStruct(u)
 }
 
 
@@ -110,7 +111,7 @@ type UserEntity struct {
 	UpdateTime time.Time
 }
 
-func (u *UserEntity) Validate() map[string]*validator.FieldError {
-	return V.Struct(u).(validator.ValidationErrors)
+func (u *UserEntity) Validate() validator.ValidationErrors {
+	return validate.ValidateStruct(u)
 }
 
