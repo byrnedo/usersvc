@@ -1,12 +1,13 @@
 package msgspec
+
 import "testing"
 
-func TestValidateStructAcceptsStructs(t *testing.T){
+func TestValidateStructAcceptsStructs(t *testing.T) {
 	var x = struct {
 		A string
-	}{ "Hello" }
+	}{"Hello"}
 
-	defer func(){
+	defer func() {
 		if r := recover(); r != nil {
 			t.Error("Should not have panicked")
 		}
@@ -15,9 +16,9 @@ func TestValidateStructAcceptsStructs(t *testing.T){
 	ValidateStruct(x)
 }
 
-func TestValidateStructDoesNotAcceptOtherTypes(t *testing.T){
+func TestValidateStructDoesNotAcceptOtherTypes(t *testing.T) {
 
-	defer func(){
+	defer func() {
 		if r := recover(); r != nil {
 			t.Log("yay, panicked")
 		}

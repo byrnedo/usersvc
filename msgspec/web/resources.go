@@ -1,8 +1,9 @@
 package web
+
 import (
+	"github.com/byrnedo/apibase/validate"
 	"github.com/byrnedo/usersvc/msgspec"
 	"gopkg.in/bluesuncorp/validator.v8"
-	"github.com/byrnedo/apibase/validate"
 )
 
 type NewUserResource struct {
@@ -20,7 +21,6 @@ type UserResource struct {
 type UsersResource struct {
 	Data []*msgspec.UserEntity `json:"data"`
 }
-
 
 func (nU *NewUserResource) Validate() validator.ValidationErrors {
 	return validate.ValidateStruct(nU)

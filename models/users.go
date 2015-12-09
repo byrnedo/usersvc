@@ -1,10 +1,11 @@
 package models
+
 import (
-	"gopkg.in/mgo.v2/bson"
-	"github.com/byrnedo/usersvc/msgspec"
 	"github.com/byrnedo/apibase/db/mongo"
-	"gopkg.in/mgo.v2"
+	"github.com/byrnedo/usersvc/msgspec"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -13,7 +14,7 @@ const (
 
 type UserModel interface {
 	Find(bson.ObjectId) (*msgspec.UserEntity, error)
-	FindMany(query map[string]interface{}, sortBy[]string, offset int, limit int) ([]*msgspec.UserEntity, error)
+	FindMany(query map[string]interface{}, sortBy []string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUserDTO) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUserDTO) (*msgspec.UserEntity, error)
 	Authenticate(email string, password string) bool
@@ -32,7 +33,7 @@ func NewDefaultUserModel() *DefaultUserModel {
 	return &DefaultUserModel{mongo.Conn()}
 }
 
-func (uM *DefaultUserModel) col() *mgo.Collection{
+func (uM *DefaultUserModel) col() *mgo.Collection {
 	return uM.Session.DB("").C(collection)
 }
 
@@ -50,7 +51,6 @@ func (uM *DefaultUserModel) Create(nUser *msgspec.NewUserDTO) (u *msgspec.UserEn
 	return u, uM.col().Insert(u)
 }
 
-
 func (uM *DefaultUserModel) Replace(updUser *msgspec.UpdateUserDTO) (u *msgspec.UserEntity, err error) {
 	if u, err = updUser.MapToEntity(); err != nil {
 		return
@@ -59,10 +59,10 @@ func (uM *DefaultUserModel) Replace(updUser *msgspec.UpdateUserDTO) (u *msgspec.
 	u.ID = ""
 
 	change := mgo.Change{
-		Update: bson.M{"$set": u},
+		Update:    bson.M{"$set": u},
 		ReturnNew: true,
 	}
-	_, err = uM.col().Find(bson.M{"_id": id}).Apply(change,u)
+	_, err = uM.col().Find(bson.M{"_id": id}).Apply(change, u)
 	return
 }
 
@@ -70,11 +70,10 @@ func (uM *DefaultUserModel) Delete(id bson.ObjectId) error {
 	return uM.col().RemoveId(id)
 }
 
-func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []string, offset int, limit int) ( []*msgspec.UserEntity, error ) {
+func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []string, offset int, limit int) ([]*msgspec.UserEntity, error) {
 	var (
-		err error
+		err    error
 		result = make([]*msgspec.UserEntity, 0)
-
 	)
 	mongo.ConvertObjectIds(query)
 	err = uM.col().Find(query).Skip(offset).Limit(limit).Sort(sortBy...).All(&result)

@@ -1,8 +1,9 @@
 package mq
+
 import (
-	r "github.com/byrnedo/apibase/routes"
 	"github.com/apcera/nats"
 	"github.com/byrnedo/apibase/natsio"
+	r "github.com/byrnedo/apibase/routes"
 )
 
 type HealthcheckController struct {
@@ -26,6 +27,3 @@ func NewHealthcheckController(nc *natsio.Nats) (hc *HealthcheckController) {
 func (c *HealthcheckController) Healthcheck(m *nats.Msg) {
 	//c.natsCon.Publish(m.Reply, "up up up")
 }
-
-
-

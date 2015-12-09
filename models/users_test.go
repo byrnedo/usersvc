@@ -1,27 +1,27 @@
 package models
-import (
 
-	"testing"
-	"github.com/byrnedo/usersvc/msgspec"
-	"reflect"
-	. "github.com/byrnedo/apibase/logger"
+import (
 	"github.com/byrnedo/apibase/db/mongo"
-	"time"
 	"github.com/byrnedo/apibase/dockertest"
+	. "github.com/byrnedo/apibase/logger"
+	"github.com/byrnedo/usersvc/msgspec"
 	gDoc "github.com/fsouza/go-dockerclient"
+	"reflect"
+	"testing"
+	"time"
 )
 
-const(
+const (
 	MongoImage = "mongo:latest"
-	MongoPort = "28017"
+	MongoPort  = "28017"
 )
 
 func setupContainer() {
 
 	if id, err := dockertest.Running(MongoImage); err != nil || len(id) < 1 {
 		if _, err := dockertest.Start(MongoImage, map[gDoc.Port][]gDoc.PortBinding{
-			"27017/tcp" : []gDoc.PortBinding{gDoc.PortBinding{
-				HostIP: "127.0.0.1",
+			"27017/tcp": []gDoc.PortBinding{gDoc.PortBinding{
+				HostIP:   "127.0.0.1",
 				HostPort: MongoPort,
 			}},
 		}); err != nil {
@@ -31,11 +31,11 @@ func setupContainer() {
 	}
 }
 
-func TestMain(m *testing.M){
+func TestMain(m *testing.M) {
 
 	setupContainer()
 
-	InitLog(func(o *LogOptions){ o.Level = InfoLevel})
+	InitLog(func(o *LogOptions) { o.Level = InfoLevel })
 	mongo.Init("mongodb://localhost:"+MongoPort+"/test_users", Trace)
 
 	c := mongo.Conn()
@@ -43,20 +43,19 @@ func TestMain(m *testing.M){
 	defer c.Close()
 	m.Run()
 
-
 }
 
 func createUser(m UserModel, t *testing.T) *msgspec.UserEntity {
 
 	user, err := m.Create(&msgspec.NewUserDTO{
 		FirstName: "test",
-		LastName: "user",
+		LastName:  "user",
 	})
 
 	if err != nil {
 		t.Error("Failed to insert:" + err.Error())
 	}
-	time.Sleep(10*time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	return user
 }
 
@@ -71,16 +70,16 @@ func TestModel(t *testing.T) {
 	t.Logf("%+v", foundUser)
 
 	if reflect.DeepEqual(user, foundUser) == false {
-		t.Error("Did not match\nexpected:%+v\n   found:%+v\n",user, foundUser)
+		t.Error("Did not match\nexpected:%+v\n   found:%+v\n", user, foundUser)
 	}
 
 	updUser, err := m.Replace(&msgspec.UpdateUserDTO{
-		ID: user.ID.Hex(),
+		ID:        user.ID.Hex(),
 		FirstName: "test",
-		LastName: "user",
-		Email: "email",
-		Password: "password",
-		Alias:"testy",
+		LastName:  "user",
+		Email:     "email",
+		Password:  "password",
+		Alias:     "testy",
 	})
 
 	if err != nil {
@@ -94,7 +93,6 @@ func TestModel(t *testing.T) {
 	if updUser.UpdateTime.After(user.UpdateTime) == false {
 		t.Errorf("Update time is not after insert time: %s -> %s", user.UpdateTime, updUser.UpdateTime)
 	}
-
 
 	valid := m.Authenticate("email", "password")
 
@@ -113,17 +111,17 @@ func TestModel(t *testing.T) {
 	}
 
 	err = m.Delete(user.ID)
-	if err !=  nil {
-		t.Error("Failed to delete user:" +err.Error())
+	if err != nil {
+		t.Error("Failed to delete user:" + err.Error())
 	}
 
-	var users = []*msgspec.UserEntity {
+	var users = []*msgspec.UserEntity{
 		createUser(m, t),
 		createUser(m, t),
 		createUser(m, t),
 	}
 
-	res, err := m.FindMany(nil, []string{"-creationtime"}, 0,10)
+	res, err := m.FindMany(nil, []string{"-creationtime"}, 0, 10)
 	if err != nil {
 		t.Error("Failed to find many:" + err.Error())
 	}
@@ -131,12 +129,12 @@ func TestModel(t *testing.T) {
 		t.Errorf("Got %d results, expected 3\n", len(res))
 	}
 
-	res, err = m.FindMany(nil, []string{"-creationtime"}, 0,1)
+	res, err = m.FindMany(nil, []string{"-creationtime"}, 0, 1)
 	if err != nil {
 		t.Error("Failed to find many:" + err.Error())
 	}
 
-	if len(res)!= 1 {
+	if len(res) != 1 {
 		t.Errorf("Got %d results, expected 1\n", len(res))
 	}
 

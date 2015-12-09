@@ -1,15 +1,14 @@
 package routers
 
 import (
-	"github.com/byrnedo/usersvc/controllers/web"
 	"github.com/byrnedo/apibase/controllers"
-	"net/http"
+	"github.com/byrnedo/apibase/middleware"
+	"github.com/byrnedo/usersvc/controllers/web"
+	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 	"github.com/ulule/limiter"
-	"github.com/byrnedo/apibase/middleware"
-	"github.com/gorilla/context"
+	"net/http"
 	"time"
-	"github.com/julienschmidt/httprouter"
 )
 
 func InitWeb() {
@@ -21,11 +20,10 @@ func InitWeb() {
 
 	//TODO - exchange for redis store
 	store := limiter.NewMemoryStoreWithOptions(limiter.StoreOptions{
-		Prefix:"byrnedosvc",
-		CleanUpInterval: 30*time.Second,
+		Prefix:          "byrnedosvc",
+		CleanUpInterval: 30 * time.Second,
 	})
 	limiterMw := limiter.NewHTTPMiddleware(limiter.NewLimiter(store, rate))
-
 
 	var rtr = httprouter.New()
 	controllers.RegisterRoutes(rtr, web.NewUsersController())
@@ -35,10 +33,8 @@ func InitWeb() {
 		limiterMw.Handler,
 		middleware.LogTime,
 		middleware.RecoverHandler,
-		context.ClearHandler,
 		middleware.AcceptJsonHandler,
 	).Then(rtr)
 
 	http.Handle("/", handlerChain)
 }
-

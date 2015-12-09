@@ -1,4 +1,5 @@
 package mq
+
 import "github.com/byrnedo/apibase/natsio"
 
 const (
@@ -7,7 +8,7 @@ const (
 
 type AuthenticateUserRequest struct {
 	natsio.NatsDTO
-	User string
+	User     string
 	Password string
 }
 

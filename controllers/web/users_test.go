@@ -1,12 +1,12 @@
 package web
+
 import (
-	"github.com/gorilla/mux"
 	"github.com/byrnedo/apibase/controllers"
-	"testing"
+	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 )
-
 
 func setup() (*httptest.ResponseRecorder, *mux.Router) {
 
@@ -16,7 +16,7 @@ func setup() (*httptest.ResponseRecorder, *mux.Router) {
 	return rec, rtr
 }
 
-func Ensure200(status int, t *testing.T){
+func Ensure200(status int, t *testing.T) {
 	if status != http.StatusOK {
 		t.Errorf("Home page didn't return %v, got %d", http.StatusOK, status)
 	}

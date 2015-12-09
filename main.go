@@ -1,16 +1,16 @@
 package main
 
 import (
-	. "github.com/byrnedo/apibase/logger"
-	"github.com/byrnedo/apibase"
-	"net/http"
 	"fmt"
-	"github.com/byrnedo/usersvc/routers"
+	"github.com/byrnedo/apibase"
 	"github.com/byrnedo/apibase/db/mongo"
-	"github.com/byrnedo/apibase/natsio"
-	"time"
-	encBson "github.com/maxwellhealth/encryptedbson"
 	"github.com/byrnedo/apibase/helpers/env"
+	. "github.com/byrnedo/apibase/logger"
+	"github.com/byrnedo/apibase/natsio"
+	"github.com/byrnedo/usersvc/routers"
+	encBson "github.com/maxwellhealth/encryptedbson"
+	"net/http"
+	"time"
 )
 
 func init() {
@@ -59,7 +59,7 @@ func main() {
 	var (
 		host string
 		port int
-		err error
+		err  error
 	)
 
 	host = apibase.Conf.GetDefaultString("http.host", "localhost")
