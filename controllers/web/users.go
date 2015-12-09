@@ -22,23 +22,23 @@ type UsersController struct {
 func NewUsersController() *UsersController {
 	return &UsersController{
 		JsonController: &controllers.JsonController{},
-		userModel: &models.DefaultUserModel{}, // mongo user model
+		userModel: models.NewDefaultUserModel(), // mongo user model
 	}
 }
 
 func (pC *UsersController) GetRoutes() []*routes.WebRoute{
 	return []*routes.WebRoute{
 		routes.NewWebRoute("CreateUser", "/api/v1/users", routes.POST, pC.Create),
+		routes.NewWebRoute("GetUser", "/api/v1/users/{userId}", routes.GET, pC.GetOne),
 		routes.NewWebRoute("GetUsers", "/api/v1/users", routes.GET, pC.List),
-		routes.NewWebRoute("GetUser", "/api/v1/users/{id}", routes.GET, pC.GetOne),
 	}
 }
 
 func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request){
 	decoder := json.NewDecoder(r.Body)
 	var u web.NewUserResource
-	err := decoder.Decode(&u)
-	if err != nil {
+
+	if err := decoder.Decode(&u); err != nil {
 		Error.Println(err)
 		panic("Failed to decode json:"+err.Error())
 	}
@@ -71,12 +71,15 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request){
 		objId bson.ObjectId
 		user *msgspec.UserEntity
 	)
-	if id, found = mux.Vars(r)["id"]; found == false {
+	if id, found = mux.Vars(r)["userId"]; found == false {
+		Error.Printf("%+v", mux.Vars(r))
+		Error.Println("Failed to find id in url")
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
 	}
 
 	if bson.IsObjectIdHex(id) == false {
+		Error.Println("Id is not object id")
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
 	}
