@@ -1,13 +1,13 @@
 package msgspec
 
 import (
-	"time"
-	validator "gopkg.in/bluesuncorp/validator.v8"
-	"gopkg.in/mgo.v2/bson"
-	encBson "github.com/maxwellhealth/encryptedbson"
-	"golang.org/x/crypto/bcrypt"
 	"errors"
 	"github.com/byrnedo/apibase/validate"
+	encBson "github.com/maxwellhealth/encryptedbson"
+	"golang.org/x/crypto/bcrypt"
+	validator "gopkg.in/bluesuncorp/validator.v8"
+	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 const (
@@ -25,36 +25,36 @@ func encryptPassword(pass string) (string, error) {
 }
 
 type NewUserDTO struct {
-	Alias string
-	FirstName string
-	LastName string
-	Email string
-	Password string
-	Role string
-	CreationTime time.Time
-	UpdateTime time.Time
+	Alias        string    `json:"alias"`
+	FirstName    string    `json:"firstname"`
+	LastName     string    `json:"lastname"`
+	Email        string    `json:"email"`
+	Password     string    `json:"password"`
+	Role         string    `json:"role"`
+	CreationTime time.Time `json:"creationtime"`
+	UpdateTime   time.Time `json:"updatetime"`
 }
 
-func(nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
+func (nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
 	var (
 		now = bson.Now()
 		err error
 	)
 
 	if nU.Password, err = encryptPassword(nU.Password); err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	return &UserEntity{
-		ID: bson.NewObjectId(),
-		Alias: nU.Alias,
-		FirstName: encBson.EncryptedString(nU.FirstName),
-		LastName: encBson.EncryptedString(nU.LastName),
-		Email: nU.Email,
-		Password: nU.Password,
-		Role: nU.Role,
+		ID:           bson.NewObjectId(),
+		Alias:        nU.Alias,
+		FirstName:    encBson.EncryptedString(nU.FirstName),
+		LastName:     encBson.EncryptedString(nU.LastName),
+		Email:        nU.Email,
+		Password:     nU.Password,
+		Role:         nU.Role,
 		CreationTime: now,
-		UpdateTime: now,
+		UpdateTime:   now,
 	}, nil
 }
 
@@ -63,33 +63,33 @@ func (u *NewUserDTO) Validate() validator.ValidationErrors {
 }
 
 type UpdateUserDTO struct {
-	ID string
-	Alias string
-	FirstName string
-	LastName string
-	Email string
-	Password string
-	Role string
-	CreationTime time.Time
-	UpdateTime time.Time
+	ID           string    `json:"id"`
+	Alias        string    `json:"alias"`
+	FirstName    string    `json:"firstname"`
+	LastName     string    `json:"lastname"`
+	Email        string    `json:"email"`
+	Password     string    `json:"password"`
+	Role         string    `json:"role"`
+	CreationTime time.Time `json:"creationtime"`
+	UpdateTime   time.Time `json:"updatetime"`
 }
 
-func(uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
+func (uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
 
 	var err error
 	if len(uU.Password) > 0 {
 		if uU.Password, err = encryptPassword(uU.Password); err != nil {
-			return nil,err
+			return nil, err
 		}
 	}
 	return &UserEntity{
-		ID: bson.ObjectIdHex(uU.ID),
-		Alias: uU.Alias,
-		FirstName: encBson.EncryptedString(uU.FirstName),
-		LastName: encBson.EncryptedString(uU.LastName),
-		Email: uU.Email,
-		Password: uU.Password,
-		Role: uU.Role,
+		ID:         bson.ObjectIdHex(uU.ID),
+		Alias:      uU.Alias,
+		FirstName:  encBson.EncryptedString(uU.FirstName),
+		LastName:   encBson.EncryptedString(uU.LastName),
+		Email:      uU.Email,
+		Password:   uU.Password,
+		Role:       uU.Role,
 		UpdateTime: bson.Now(),
 	}, nil
 }
@@ -98,20 +98,18 @@ func (u *UpdateUserDTO) Validate() validator.ValidationErrors {
 	return validate.ValidateStruct(u)
 }
 
-
 type UserEntity struct {
-	ID bson.ObjectId `bson:"_id,omitempty"`
-	Alias string
-	FirstName encBson.EncryptedString
-	LastName encBson.EncryptedString
-	Email string
-	Password string `bson:"password,omitempty"`
-	Role string
-	CreationTime time.Time `bson:"creationtime,omitempty"`
-	UpdateTime time.Time
+	ID           bson.ObjectId           `bson:"_id,omitempty" json:"id"`
+	Alias        string                  `json:"alias"`
+	FirstName    encBson.EncryptedString `json:"firstname"`
+	LastName     encBson.EncryptedString `json:"lastname"`
+	Email        string                  `json:"email"`
+	Password     string                  `bson:"password,omitempty" json:"-"`
+	Role         string                  `json:"role"`
+	CreationTime time.Time               `bson:"creationtime,omitempty" json:"creationtime"`
+	UpdateTime   time.Time               `json:"updatetime"`
 }
 
 func (u *UserEntity) Validate() validator.ValidationErrors {
 	return validate.ValidateStruct(u)
 }
-

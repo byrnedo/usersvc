@@ -91,18 +91,20 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
-	//query := pC.QueryMap(r, "query")
+	query := pC.QueryInterfaceMap(r, "query", &msgspec.UserEntity{})
 	order, _ := r.URL.Query()["order"]
 	offset, _ := pC.QueryInt(r, "offset")
 	limit, _ := pC.QueryInt(r, "limit")
 
-	users, err := pC.userModel.FindMany(nil,order,offset,limit)
+	Error.Printf("%+v", query)
+
+	users, err := pC.userModel.FindMany(query,order,offset,limit)
 	if err != nil {
 		Error.Println("Failed to find users:" + err.Error())
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
 	}
 
-	pC.Serve(w, &web.ManyUserResource{users})
+	pC.Serve(w, &web.UsersResource{users})
 
 }

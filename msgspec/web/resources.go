@@ -17,7 +17,7 @@ type UserResource struct {
 	Data *msgspec.UserEntity `json:"data"`
 }
 
-type ManyUserResource struct {
+type UsersResource struct {
 	Data []*msgspec.UserEntity `json:"data"`
 }
 
