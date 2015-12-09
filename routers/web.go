@@ -1,14 +1,15 @@
 package routers
 
 import (
-	"github.com/gorilla/mux"
 	"github.com/byrnedo/usersvc/controllers/web"
 	"github.com/byrnedo/apibase/controllers"
 	"net/http"
 	"github.com/justinas/alice"
 	"github.com/ulule/limiter"
 	"github.com/byrnedo/apibase/middleware"
+	"github.com/gorilla/context"
 	"time"
+	"github.com/julienschmidt/httprouter"
 )
 
 func InitWeb() {
@@ -26,14 +27,15 @@ func InitWeb() {
 	limiterMw := limiter.NewHTTPMiddleware(limiter.NewLimiter(store, rate))
 
 
-	var rtr = mux.NewRouter().StrictSlash(true)
-	controllers.RegisterMuxRoutes(rtr, web.NewUsersController())
+	var rtr = httprouter.New()
+	controllers.RegisterRoutes(rtr, web.NewUsersController())
 
 	//alice is a tiny package to chain middlewares.
 	handlerChain := alice.New(
 		limiterMw.Handler,
 		middleware.LogTime,
 		middleware.RecoverHandler,
+		context.ClearHandler,
 		middleware.AcceptJsonHandler,
 	).Then(rtr)
 

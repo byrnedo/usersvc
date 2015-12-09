@@ -3,7 +3,6 @@ package web
 import (
 	routes "github.com/byrnedo/apibase/routes"
 	"net/http"
-	"github.com/fsouza/go-dockerclient/external/github.com/gorilla/mux"
 	"github.com/byrnedo/usersvc/models"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/byrnedo/usersvc/msgspec"
@@ -12,6 +11,7 @@ import (
 	svcSpec "github.com/byrnedo/svccommon/msgspec/web"
 	"encoding/json"
 	"github.com/byrnedo/usersvc/msgspec/web"
+	"github.com/julienschmidt/httprouter"
 )
 
 type UsersController struct {
@@ -29,12 +29,12 @@ func NewUsersController() *UsersController {
 func (pC *UsersController) GetRoutes() []*routes.WebRoute{
 	return []*routes.WebRoute{
 		routes.NewWebRoute("CreateUser", "/api/v1/users", routes.POST, pC.Create),
-		routes.NewWebRoute("GetUser", "/api/v1/users/{userId}", routes.GET, pC.GetOne),
+		routes.NewWebRoute("GetUser", "/api/v1/users/:userId", routes.GET, pC.GetOne),
 		routes.NewWebRoute("GetUsers", "/api/v1/users", routes.GET, pC.List),
 	}
 }
 
-func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request){
+func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	decoder := json.NewDecoder(r.Body)
 	var u web.NewUserResource
 
@@ -45,9 +45,7 @@ func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request){
 
 	if valErrs := u.Validate(); len(valErrs) != 0 {
 		errResponse := svcSpec.NewErrorResponse()
-
 		for field, fieldErr := range valErrs {
-			Info.Printf("%s -> %+v\n", field, fieldErr)
 			errResponse.AddError(400, &svcSpec.Source{Parameter:field}, fieldErr.Tag, fieldErr.Tag)
 		}
 		pC.ServeWithStatus(w, errResponse, 400)
@@ -63,16 +61,14 @@ func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request){
 	pC.ServeWithStatus(w, inserted, 201)
 }
 
-func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request){
+func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	var (
 		id string
 		err error
-		found bool
 		objId bson.ObjectId
 		user *msgspec.UserEntity
 	)
-	if id, found = mux.Vars(r)["userId"]; found == false {
-		Error.Printf("%+v", mux.Vars(r))
+	if id = ps.ByName("userId"); id == "" {
 		Error.Println("Failed to find id in url")
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
@@ -97,7 +93,7 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (pC *UsersController) List(w http.ResponseWriter, r *http.Request){
+func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 
 //	var fields = r.URL.Query("fields")
 //
