@@ -89,7 +89,7 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	pC.Serve(w, user)
+	pC.Serve(w, &web.UserResource{user})
 
 }
 
