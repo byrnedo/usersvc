@@ -91,12 +91,8 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
-
-	//var query = pC.QueryMap(r, "query")
-	//var fields = pC.QuerySlice("fields")
-	var order = pC.QuerySlice(r, "order")
-
-
+	//query := pC.QueryMap(r, "query")
+	order, _ := r.URL.Query()["order"]
 	offset, _ := pC.QueryInt(r, "offset")
 	limit, _ := pC.QueryInt(r, "limit")
 
