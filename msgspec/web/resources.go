@@ -17,6 +17,10 @@ type UserResource struct {
 	Data *msgspec.UserEntity `json:"data"`
 }
 
+type ManyUserResource struct {
+	Data []*msgspec.UserEntity `json:"data"`
+}
+
 
 func (nU *NewUserResource) Validate() validator.ValidationErrors {
 	return validate.ValidateStruct(nU)

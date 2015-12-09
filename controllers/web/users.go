@@ -68,11 +68,8 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 		objId bson.ObjectId
 		user *msgspec.UserEntity
 	)
-	if id = ps.ByName("userId"); id == "" {
-		Error.Println("Failed to find id in url")
-		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
-		return
-	}
+
+	id = ps.ByName("userId")
 
 	if bson.IsObjectIdHex(id) == false {
 		Error.Println("Id is not object id")
@@ -95,13 +92,21 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 
 func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 
-//	var fields = r.URL.Query("fields")
-//
-//	var order = r.URL.Query("order")
-//
-//	var offset = r.URL.Query("offset")
-//	var limit = r.URL.Query("limit")
-//
-//	r.URL.Query().Get()
+	//var query = pC.QueryMap(r, "query")
+	//var fields = pC.QuerySlice("fields")
+	var order = pC.QuerySlice(r, "order")
+
+
+	offset, _ := pC.QueryInt(r, "offset")
+	limit, _ := pC.QueryInt(r, "limit")
+
+	users, err := pC.userModel.FindMany(nil,order,offset,limit)
+	if err != nil {
+		Error.Println("Failed to find users:" + err.Error())
+		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
+		return
+	}
+
+	pC.Serve(w, &web.ManyUserResource{users})
 
 }
