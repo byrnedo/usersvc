@@ -2,62 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/byrnedo/apibase"
-	"github.com/byrnedo/apibase/db/mongo"
+	"github.com/byrnedo/apibase/config"
 	"github.com/byrnedo/apibase/helpers/env"
 	. "github.com/byrnedo/apibase/logger"
-	"github.com/byrnedo/apibase/natsio"
-	"github.com/byrnedo/usersvc/models"
-	"github.com/byrnedo/usersvc/routers"
-	encBson "github.com/maxwellhealth/encryptedbson"
+	_ "github.com/byrnedo/usersvc/routers"
 	"net/http"
-	"time"
 )
-
-func init() {
-
-	apibase.Init()
-
-	mongoUrl := env.GetOr("MONGO_URL", apibase.Conf.GetDefaultString("mongo.url", ""))
-	Info.Println("Attempting to connect to [" + mongoUrl + "]")
-
-	mongo.Init(mongoUrl, Trace)
-	encryptionKey, err := apibase.Conf.GetString("encryption-key")
-	if err != nil {
-		panic("Failed to get encryption-key:" + err.Error())
-	}
-	copy(encBson.EncryptionKey[:], encryptionKey)
-
-	userModel := models.NewDefaultUserModel()
-	userModel.Ensures()
-
-	natsOpts := natsio.NewNatsOptions(func(n *natsio.NatsOptions) error {
-		n.Url = env.GetOr("NATS_URL", apibase.Conf.GetDefaultString("nats.url", "nats://localhost:4222"))
-		Info.Println("Attempting to connect to [" + n.Url + "]")
-		n.Timeout = 10 * time.Second
-		if appName, err := apibase.Conf.GetString("app-name"); err == nil && len(appName) > 0 {
-			n.Name = appName
-		} else {
-			panic("must set app-name in conf.")
-		}
-
-		Trace.Printf("Nats Opts: %+v", n)
-
-		return nil
-	})
-
-	Info.Println("Nats encoding:", natsOpts.GetEncoding())
-
-	natsCon, err := natsOpts.Connect()
-	if err != nil {
-		panic("Failed to connect to nats:" + err.Error())
-	}
-
-	routers.InitMq(natsCon)
-
-	routers.InitWeb()
-
-}
 
 func main() {
 
@@ -67,8 +17,8 @@ func main() {
 		err  error
 	)
 
-	host = apibase.Conf.GetDefaultString("http.host", "localhost")
-	if port, err = env.GetOrInt("PORT", int(apibase.Conf.GetDefaultInt("http.port", 9999))); err != nil {
+	host = config.Conf.GetDefaultString("http.host", "localhost")
+	if port, err = env.GetOrInt("PORT", int(config.Conf.GetDefaultInt("http.port", 9999))); err != nil {
 		panic(err.Error())
 	}
 

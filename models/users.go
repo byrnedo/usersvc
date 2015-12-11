@@ -1,13 +1,15 @@
 package models
 
 import (
-	"github.com/byrnedo/apibase/db/mongo"
 	"github.com/byrnedo/apibase/helpers/strings"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/usersvc/msgspec"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/byrnedo/apibase/config"
+	encBson "github.com/maxwellhealth/encryptedbson"
+	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 )
 
 const (
@@ -28,8 +30,20 @@ type DefaultUserModel struct {
 	Session *mgo.Session
 }
 
+func init(){
+
+	encryptionKey, err := config.Conf.GetString("encryption-key")
+	if err != nil {
+		panic("Failed to get encryption-key:" + err.Error())
+	}
+	copy(encBson.EncryptionKey[:], encryptionKey)
+
+	userModel := NewDefaultUserModel()
+	userModel.Ensures()
+}
+
 func NewDefaultUserModel() *DefaultUserModel {
-	return &DefaultUserModel{mongo.Conn()}
+	return &DefaultUserModel{defaultmongo.Conn()}
 }
 
 func (u *DefaultUserModel) Ensures() {
@@ -45,6 +59,7 @@ func (u *DefaultUserModel) Ensures() {
 	}
 
 	if _, err := u.FindByEmail(defaultUserEmail); err != nil {
+		Error.Println(err)
 		var (
 			randomPass = strings.RandString(12)
 		)
@@ -130,7 +145,7 @@ func (a *AuthenticationError) Error() string {
 	return string(a.Reason)
 }
 
-func (uM *DefaultUserModel) Authenticate(email string, password string) ( retErr *AuthenticationError) {
+func (uM *DefaultUserModel) Authenticate(email string, password string) (retErr *AuthenticationError) {
 	var (
 		user = &msgspec.UserEntity{}
 		err  error
