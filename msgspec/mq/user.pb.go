@@ -9,8 +9,8 @@
 		user.proto
 
 	It has these top-level messages:
-		AuthenticateUserRequest
-		AuthenticateUserResponse
+		InnerAuthenticateUserRequest
+		InnerAuthenticateUserResponse
 */
 package mq
 
@@ -26,64 +26,64 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-type AuthenticateUserRequest struct {
+type InnerAuthenticateUserRequest struct {
 	Context          *protobuf.NatsContext `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
 	Username         *string               `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
 	Password         *string               `protobuf:"bytes,3,opt,name=password" json:"password,omitempty"`
 	XXX_unrecognized []byte                `json:"-"`
 }
 
-func (m *AuthenticateUserRequest) Reset()         { *m = AuthenticateUserRequest{} }
-func (m *AuthenticateUserRequest) String() string { return proto.CompactTextString(m) }
-func (*AuthenticateUserRequest) ProtoMessage()    {}
+func (m *InnerAuthenticateUserRequest) Reset()         { *m = InnerAuthenticateUserRequest{} }
+func (m *InnerAuthenticateUserRequest) String() string { return proto.CompactTextString(m) }
+func (*InnerAuthenticateUserRequest) ProtoMessage()    {}
 
-func (m *AuthenticateUserRequest) GetContext() *protobuf.NatsContext {
+func (m *InnerAuthenticateUserRequest) GetContext() *protobuf.NatsContext {
 	if m != nil {
 		return m.Context
 	}
 	return nil
 }
 
-func (m *AuthenticateUserRequest) GetUsername() string {
+func (m *InnerAuthenticateUserRequest) GetUsername() string {
 	if m != nil && m.Username != nil {
 		return *m.Username
 	}
 	return ""
 }
 
-func (m *AuthenticateUserRequest) GetPassword() string {
+func (m *InnerAuthenticateUserRequest) GetPassword() string {
 	if m != nil && m.Password != nil {
 		return *m.Password
 	}
 	return ""
 }
 
-type AuthenticateUserResponse struct {
+type InnerAuthenticateUserResponse struct {
 	Context          *protobuf.NatsContext `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
 	Error            *string               `protobuf:"bytes,2,opt,name=error" json:"error,omitempty"`
 	Authenticated    *bool                 `protobuf:"varint,3,opt,name=authenticated" json:"authenticated,omitempty"`
 	XXX_unrecognized []byte                `json:"-"`
 }
 
-func (m *AuthenticateUserResponse) Reset()         { *m = AuthenticateUserResponse{} }
-func (m *AuthenticateUserResponse) String() string { return proto.CompactTextString(m) }
-func (*AuthenticateUserResponse) ProtoMessage()    {}
+func (m *InnerAuthenticateUserResponse) Reset()         { *m = InnerAuthenticateUserResponse{} }
+func (m *InnerAuthenticateUserResponse) String() string { return proto.CompactTextString(m) }
+func (*InnerAuthenticateUserResponse) ProtoMessage()    {}
 
-func (m *AuthenticateUserResponse) GetContext() *protobuf.NatsContext {
+func (m *InnerAuthenticateUserResponse) GetContext() *protobuf.NatsContext {
 	if m != nil {
 		return m.Context
 	}
 	return nil
 }
 
-func (m *AuthenticateUserResponse) GetError() string {
+func (m *InnerAuthenticateUserResponse) GetError() string {
 	if m != nil && m.Error != nil {
 		return *m.Error
 	}
 	return ""
 }
 
-func (m *AuthenticateUserResponse) GetAuthenticated() bool {
+func (m *InnerAuthenticateUserResponse) GetAuthenticated() bool {
 	if m != nil && m.Authenticated != nil {
 		return *m.Authenticated
 	}
@@ -91,10 +91,10 @@ func (m *AuthenticateUserResponse) GetAuthenticated() bool {
 }
 
 func init() {
-	proto.RegisterType((*AuthenticateUserRequest)(nil), "mq.AuthenticateUserRequest")
-	proto.RegisterType((*AuthenticateUserResponse)(nil), "mq.AuthenticateUserResponse")
+	proto.RegisterType((*InnerAuthenticateUserRequest)(nil), "mq.InnerAuthenticateUserRequest")
+	proto.RegisterType((*InnerAuthenticateUserResponse)(nil), "mq.InnerAuthenticateUserResponse")
 }
-func (m *AuthenticateUserRequest) Marshal() (data []byte, err error) {
+func (m *InnerAuthenticateUserRequest) Marshal() (data []byte, err error) {
 	size := m.Size()
 	data = make([]byte, size)
 	n, err := m.MarshalTo(data)
@@ -104,7 +104,7 @@ func (m *AuthenticateUserRequest) Marshal() (data []byte, err error) {
 	return data[:n], nil
 }
 
-func (m *AuthenticateUserRequest) MarshalTo(data []byte) (int, error) {
+func (m *InnerAuthenticateUserRequest) MarshalTo(data []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
@@ -137,7 +137,7 @@ func (m *AuthenticateUserRequest) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *AuthenticateUserResponse) Marshal() (data []byte, err error) {
+func (m *InnerAuthenticateUserResponse) Marshal() (data []byte, err error) {
 	size := m.Size()
 	data = make([]byte, size)
 	n, err := m.MarshalTo(data)
@@ -147,7 +147,7 @@ func (m *AuthenticateUserResponse) Marshal() (data []byte, err error) {
 	return data[:n], nil
 }
 
-func (m *AuthenticateUserResponse) MarshalTo(data []byte) (int, error) {
+func (m *InnerAuthenticateUserResponse) MarshalTo(data []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
@@ -211,7 +211,7 @@ func encodeVarintUser(data []byte, offset int, v uint64) int {
 	data[offset] = uint8(v)
 	return offset + 1
 }
-func (m *AuthenticateUserRequest) Size() (n int) {
+func (m *InnerAuthenticateUserRequest) Size() (n int) {
 	var l int
 	_ = l
 	if m.Context != nil {
@@ -232,7 +232,7 @@ func (m *AuthenticateUserRequest) Size() (n int) {
 	return n
 }
 
-func (m *AuthenticateUserResponse) Size() (n int) {
+func (m *InnerAuthenticateUserResponse) Size() (n int) {
 	var l int
 	_ = l
 	if m.Context != nil {
@@ -265,7 +265,7 @@ func sovUser(x uint64) (n int) {
 func sozUser(x uint64) (n int) {
 	return sovUser(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *AuthenticateUserRequest) Unmarshal(data []byte) error {
+func (m *InnerAuthenticateUserRequest) Unmarshal(data []byte) error {
 	l := len(data)
 	iNdEx := 0
 	for iNdEx < l {
@@ -288,10 +288,10 @@ func (m *AuthenticateUserRequest) Unmarshal(data []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: AuthenticateUserRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: InnerAuthenticateUserRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AuthenticateUserRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InnerAuthenticateUserRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -409,7 +409,7 @@ func (m *AuthenticateUserRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *AuthenticateUserResponse) Unmarshal(data []byte) error {
+func (m *InnerAuthenticateUserResponse) Unmarshal(data []byte) error {
 	l := len(data)
 	iNdEx := 0
 	for iNdEx < l {
@@ -432,10 +432,10 @@ func (m *AuthenticateUserResponse) Unmarshal(data []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: AuthenticateUserResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: InnerAuthenticateUserResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AuthenticateUserResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InnerAuthenticateUserResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

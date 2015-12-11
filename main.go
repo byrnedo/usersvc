@@ -37,6 +37,8 @@ func init() {
 		return nil
 	})
 
+	Info.Println("Nats encoding:", natsOpts.GetEncoding())
+
 	natsCon, err := natsOpts.Connect()
 	if err != nil {
 		panic("Failed to connect to nats:" + err.Error())

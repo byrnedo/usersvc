@@ -7,7 +7,6 @@ import (
 	r "github.com/byrnedo/apibase/routes"
 	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec/mq"
-	"github.com/byrnedo/apibase/natsio/protobuf"
 )
 
 type UsersController struct {
@@ -16,15 +15,6 @@ type UsersController struct {
 	userModel models.UserModel
 }
 
-type WrapAuthUserRes struct {
-	*mq.AuthenticateUserResponse
-}
-func (w *WrapAuthUserRes) SetContext(ctx *protobuf.NatsContext) {
-	w.Context = ctx
-}
-func newWrapAuthUserRes(msg *mq.AuthenticateUserResponse) *WrapAuthUserRes {
-	return &WrapAuthUserRes{msg}
-}
 
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
 	return []*r.NatsRoute{
@@ -51,13 +41,12 @@ func (c *UsersController) Update(m *nats.Msg) {
 func (c *UsersController) Delete(m *nats.Msg) {
 }
 
-func (c *UsersController) Authenticate(subj string, reply string, data *mq.AuthenticateUserRequest) {
+func (c *UsersController) Authenticate(subj string, reply string, data *mq.InnerAuthenticateUserRequest) {
+	Info.Println("Got authenticate request:", data)
 	valid := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
-	response := mq.AuthenticateUserResponse{
-		Authenticated: &valid,
-	}
+	response := mq.NewAuthenticateUserResponse(&mq.InnerAuthenticateUserResponse{Authenticated: &valid})
 
-	if err := c.natsCon.Publish(reply, data.GetContext(), newWrapAuthUserRes(&response)); err != nil {
+	if err := c.natsCon.Publish(reply, data.GetContext(), response); err != nil {
 		Error.Println("Error sending reply:" + err.Error())
 	}
 }

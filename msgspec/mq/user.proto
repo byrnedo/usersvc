@@ -2,14 +2,12 @@ package mq;
 
 import "github.com/byrnedo/apibase/natsio/protobuf/nats.proto";
 
-
-
-message AuthenticateUserRequest {
+message InnerAuthenticateUserRequest {
     optional protobuf.NatsContext context = 1;
     optional string username = 2;
     optional string password = 3;
 }
-message AuthenticateUserResponse {
+message InnerAuthenticateUserResponse {
     optional protobuf.NatsContext context = 1;
     optional string error = 2;
     optional bool authenticated = 3;
