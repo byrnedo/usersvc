@@ -7,6 +7,7 @@ import (
 	"github.com/byrnedo/apibase/helpers/env"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
+	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/routers"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"net/http"
@@ -21,6 +22,14 @@ func init() {
 	Info.Println("Attempting to connect to [" + mongoUrl + "]")
 
 	mongo.Init(mongoUrl, Trace)
+	encryptionKey, err := apibase.Conf.GetString("encryption-key")
+	if err != nil {
+		panic("Failed to get encryption-key:" + err.Error())
+	}
+	copy(encBson.EncryptionKey[:], encryptionKey)
+
+	userModel := models.NewDefaultUserModel()
+	userModel.Ensures()
 
 	natsOpts := natsio.NewNatsOptions(func(n *natsio.NatsOptions) error {
 		n.Url = env.GetOr("NATS_URL", apibase.Conf.GetDefaultString("nats.url", "nats://localhost:4222"))
@@ -43,12 +52,6 @@ func init() {
 	if err != nil {
 		panic("Failed to connect to nats:" + err.Error())
 	}
-
-	encryptionKey, err := apibase.Conf.GetString("encryption-key")
-	if err != nil {
-		panic("Failed to get encryption-key:" + err.Error())
-	}
-	copy(encBson.EncryptionKey[:], encryptionKey)
 
 	routers.InitMq(natsCon)
 

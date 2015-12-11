@@ -1,12 +1,12 @@
 package mq
 
 import (
-	"github.com/nats-io/nats"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
 	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec/mq"
+	"github.com/nats-io/nats"
 )
 
 type UsersController struct {
@@ -14,7 +14,6 @@ type UsersController struct {
 	natsCon   *natsio.Nats
 	userModel models.UserModel
 }
-
 
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
 	return []*r.NatsRoute{
@@ -43,9 +42,17 @@ func (c *UsersController) Delete(m *nats.Msg) {
 
 func (c *UsersController) Authenticate(subj string, reply string, data *mq.InnerAuthenticateUserRequest) {
 	Info.Println("Got authenticate request:", data)
-	valid := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
-	response := mq.NewAuthenticateUserResponse(&mq.InnerAuthenticateUserResponse{Authenticated: &valid})
+	err := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
 
+	var valid bool
+	if err == nil {
+		valid = true
+		Info.Println("Authentication successful")
+	} else {
+		valid = false
+		Info.Println("Authentication failed:", err)
+	}
+	response := mq.NewAuthenticateUserResponse(&mq.InnerAuthenticateUserResponse{Authenticated: &valid})
 	if err := c.natsCon.Publish(reply, data.GetContext(), response); err != nil {
 		Error.Println("Error sending reply:" + err.Error())
 	}

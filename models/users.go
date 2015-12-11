@@ -2,15 +2,17 @@ package models
 
 import (
 	"github.com/byrnedo/apibase/db/mongo"
+	"github.com/byrnedo/apibase/helpers/strings"
+	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/usersvc/msgspec"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	. "github.com/byrnedo/apibase/logger"
 )
 
 const (
-	collection = "users"
+	collection       = "users"
+	defaultUserEmail = "admin@apibase.com"
 )
 
 type UserModel interface {
@@ -18,7 +20,7 @@ type UserModel interface {
 	FindMany(query map[string]interface{}, sortBy []string, offset int, limit int) ([]*msgspec.UserEntity, error)
 	Create(*msgspec.NewUserDTO) (*msgspec.UserEntity, error)
 	Replace(*msgspec.UpdateUserDTO) (*msgspec.UserEntity, error)
-	Authenticate(email string, password string) bool
+	Authenticate(email string, password string) *AuthenticationError
 	Delete(bson.ObjectId) error
 }
 
@@ -26,12 +28,37 @@ type DefaultUserModel struct {
 	Session *mgo.Session
 }
 
-func init() {
-
-}
-
 func NewDefaultUserModel() *DefaultUserModel {
 	return &DefaultUserModel{mongo.Conn()}
+}
+
+func (u *DefaultUserModel) Ensures() {
+	index := mgo.Index{
+		Key:        []string{"email"},
+		Unique:     true,
+		DropDups:   false,
+		Background: false, // See notes.
+		Sparse:     true,
+	}
+	if err := u.col().EnsureIndex(index); err != nil {
+		panic("Failed to create index:" + err.Error())
+	}
+
+	if _, err := u.FindByEmail(defaultUserEmail); err != nil {
+		var (
+			randomPass = strings.RandString(12)
+		)
+		Info.Println("Creating default user : "+defaultUserEmail, ",  password : "+randomPass)
+		if _, err = u.Create(&msgspec.NewUserDTO{
+			Alias:     "defaultuser",
+			FirstName: "Admin",
+			LastName:  "User",
+			Email:     defaultUserEmail,
+			Password:  randomPass,
+		}); err != nil {
+			panic("Failed to create default user:" + err.Error())
+		}
+	}
 }
 
 func (uM *DefaultUserModel) col() *mgo.Collection {
@@ -41,6 +68,12 @@ func (uM *DefaultUserModel) col() *mgo.Collection {
 func (uM *DefaultUserModel) Find(id bson.ObjectId) (u *msgspec.UserEntity, err error) {
 	u = &msgspec.UserEntity{}
 	q := uM.col().FindId(id).One(u)
+	return u, q
+}
+
+func (uM *DefaultUserModel) FindByEmail(email string) (u *msgspec.UserEntity, err error) {
+	u = &msgspec.UserEntity{}
+	q := uM.col().Find(bson.M{"email": email}).One(u)
 	return u, q
 }
 
@@ -82,13 +115,33 @@ func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []stri
 	return result, err
 }
 
-func (uM *DefaultUserModel) Authenticate(email string, password string) bool {
-	var user = &msgspec.UserEntity{}
-	if err := uM.col().Find(bson.M{"email": email}).One(user); err != nil {
-		return false
+type AuthenticationErrorStatus string
+
+const (
+	USER_NOT_FOUND  AuthenticationErrorStatus = "User not found."
+	PASSWORD_FAILED AuthenticationErrorStatus = "Password doesn't match."
+)
+
+type AuthenticationError struct {
+	Reason AuthenticationErrorStatus
+}
+
+func (a *AuthenticationError) Error() string {
+	return string(a.Reason)
+}
+
+func (uM *DefaultUserModel) Authenticate(email string, password string) ( retErr *AuthenticationError) {
+	var (
+		user = &msgspec.UserEntity{}
+		err  error
+	)
+	if user, err = uM.FindByEmail(email); err != nil {
+		Error.Println(err)
+		retErr = &AuthenticationError{USER_NOT_FOUND}
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return false
+		Error.Println(err)
+		retErr = &AuthenticationError{PASSWORD_FAILED}
 	}
-	return true
+	return retErr
 }

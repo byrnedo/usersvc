@@ -1,9 +1,9 @@
 package web
 
 import (
+	"github.com/byrnedo/svccommon/validate"
 	"github.com/byrnedo/usersvc/msgspec"
 	"gopkg.in/bluesuncorp/validator.v8"
-	"github.com/byrnedo/svccommon/validate"
 )
 
 type NewUserResource struct {

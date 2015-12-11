@@ -96,17 +96,17 @@ func TestModel(t *testing.T) {
 
 	valid := m.Authenticate("email", "password")
 
-	if valid == false {
+	if valid != nil {
 		t.Error("Authenticate returned false")
 	}
 
 	valid = m.Authenticate("email", "password2")
-	if valid == true {
+	if valid == nil {
 		t.Error("Bad Authenticate returned true")
 	}
 
 	valid = m.Authenticate("gmail", "password2")
-	if valid == true {
+	if valid == nil {
 		t.Error("Bad Authenticate returned true")
 	}
 

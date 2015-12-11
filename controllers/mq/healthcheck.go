@@ -1,9 +1,9 @@
 package mq
 
 import (
-	"github.com/nats-io/nats"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
+	"github.com/nats-io/nats"
 )
 
 type HealthcheckController struct {
