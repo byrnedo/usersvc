@@ -1,7 +1,7 @@
 package mq
 
 import (
-	"github.com/apcera/nats"
+	"github.com/nats-io/nats"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
 )

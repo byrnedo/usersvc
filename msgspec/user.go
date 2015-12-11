@@ -2,12 +2,12 @@ package msgspec
 
 import (
 	"errors"
-	"github.com/byrnedo/apibase/validate"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
 	validator "gopkg.in/bluesuncorp/validator.v8"
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"github.com/byrnedo/svccommon/validate"
 )
 
 const (

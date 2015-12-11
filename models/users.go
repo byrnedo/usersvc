@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	. "github.com/byrnedo/apibase/logger"
 )
 
 const (
@@ -75,7 +76,8 @@ func (uM *DefaultUserModel) FindMany(query map[string]interface{}, sortBy []stri
 		err    error
 		result = make([]*msgspec.UserEntity, 0)
 	)
-	mongo.ConvertObjectIds(query)
+
+	Error.Printf("%+v", query)
 	err = uM.col().Find(query).Skip(offset).Limit(limit).Sort(sortBy...).All(&result)
 	return result, err
 }

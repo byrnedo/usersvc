@@ -1,18 +1,29 @@
 package mq
 
 import (
-	"github.com/apcera/nats"
+	"github.com/nats-io/nats"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
 	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec/mq"
+	"github.com/byrnedo/apibase/natsio/protobuf"
 )
 
 type UsersController struct {
 	routes    []*r.NatsRoute
 	natsCon   *natsio.Nats
 	userModel models.UserModel
+}
+
+type WrapAuthUserRes struct {
+	*mq.AuthenticateUserResponse
+}
+func (w *WrapAuthUserRes) SetContext(ctx *protobuf.NatsContext) {
+	w.Context = ctx
+}
+func newWrapAuthUserRes(msg *mq.AuthenticateUserResponse) *WrapAuthUserRes {
+	return &WrapAuthUserRes{msg}
 }
 
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
@@ -41,13 +52,12 @@ func (c *UsersController) Delete(m *nats.Msg) {
 }
 
 func (c *UsersController) Authenticate(subj string, reply string, data *mq.AuthenticateUserRequest) {
-	valid := c.userModel.Authenticate(data.User, data.Password)
+	valid := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
 	response := mq.AuthenticateUserResponse{
-		NatsDTO:       natsio.NatsDTO{NatsCtx: data.NatsCtx},
-		Authenticated: valid,
+		Authenticated: &valid,
 	}
 
-	if err := c.natsCon.Publish(reply, &response); err != nil {
+	if err := c.natsCon.Publish(reply, data.GetContext(), newWrapAuthUserRes(&response)); err != nil {
 		Error.Println("Error sending reply:" + err.Error())
 	}
 }
