@@ -1,15 +1,15 @@
 package models
 
 import (
-	"github.com/byrnedo/apibase/helpers/strings"
+	"github.com/byrnedo/apibase/helpers/stringhelp"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/usersvc/msgspec"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/byrnedo/apibase/config"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
+	"github.com/byrnedo/apibase/config/defaultconfig"
 )
 
 const (
@@ -32,7 +32,7 @@ type DefaultUserModel struct {
 
 func init(){
 
-	encryptionKey, err := config.Conf.GetString("encryption-key")
+	encryptionKey, err := defaultconfig.Conf.GetString("encryption-key")
 	if err != nil {
 		panic("Failed to get encryption-key:" + err.Error())
 	}
@@ -61,7 +61,7 @@ func (u *DefaultUserModel) Ensures() {
 	if _, err := u.FindByEmail(defaultUserEmail); err != nil {
 		Error.Println(err)
 		var (
-			randomPass = strings.RandString(12)
+			randomPass = stringhelp.RandString(12)
 		)
 		Info.Println("Creating default user : "+defaultUserEmail, ",  password : "+randomPass)
 		if _, err = u.Create(&msgspec.NewUserDTO{
