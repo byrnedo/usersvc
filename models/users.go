@@ -9,7 +9,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
-	"github.com/byrnedo/apibase/config/defaultconfig"
+	"github.com/byrnedo/apibase/config"
 )
 
 const (
@@ -32,7 +32,7 @@ type DefaultUserModel struct {
 
 func init(){
 
-	encryptionKey, err := defaultconfig.Conf.GetString("encryption-key")
+	encryptionKey, err := config.Conf.GetString("encryption-key")
 	if err != nil {
 		panic("Failed to get encryption-key:" + err.Error())
 	}
