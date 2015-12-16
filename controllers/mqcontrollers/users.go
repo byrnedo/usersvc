@@ -4,15 +4,16 @@ import (
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
-	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
+	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 	"github.com/nats-io/nats"
+	"github.com/byrnedo/usersvc/daos"
 )
 
 type UsersController struct {
 	routes    []*r.NatsRoute
 	natsCon   *natsio.Nats
-	userModel models.UserModel
+	userModel daos.UserDAO
 }
 
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
@@ -21,10 +22,10 @@ func (c *UsersController) GetRoutes() []*r.NatsRoute {
 	}
 }
 
-func NewUsersController(nc *natsio.Nats) (pC *UsersController) {
+func NewUsersController(nc *natsio.Nats, encryptionKey string) (pC *UsersController) {
 	pC = &UsersController{}
 	pC.natsCon = nc
-	pC.userModel = models.NewDefaultUserModel()
+	pC.userModel = daos.NewDefaultUserDAO(defaultmongo.Conn(), encryptionKey)
 	return
 }
 

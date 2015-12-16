@@ -7,22 +7,24 @@ import (
 	routes "github.com/byrnedo/apibase/routes"
 	svcSpec "github.com/byrnedo/svccommon/msgspec/web"
 	"github.com/byrnedo/usersvc/models"
-	"github.com/byrnedo/usersvc/msgspec"
 	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"github.com/byrnedo/usersvc/daos"
+	"github.com/byrnedo/svccommon/validate"
+	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 )
 
 type UsersController struct {
 	*controllers.JsonController
-	userModel models.UserModel
+	userModel daos.UserDAO
 }
 
-func NewUsersController() *UsersController {
+func NewUsersController(encryptionKey string) *UsersController {
 	return &UsersController{
 		JsonController: &controllers.JsonController{},
-		userModel:      models.NewDefaultUserModel(), // mongo user model
+		userModel:      daos.NewDefaultUserDAO(defaultmongo.Conn(), encryptionKey), // mongo user model
 	}
 }
 
@@ -37,14 +39,14 @@ func (pC *UsersController) GetRoutes() []*routes.WebRoute {
 
 func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	decoder := json.NewDecoder(r.Body)
-	var u web.NewUserResource
+	var u webmsgspec.NewUserResource
 
 	if err := decoder.Decode(&u); err != nil {
 		Error.Println(err)
 		panic("Failed to decode json:" + err.Error())
 	}
 
-	if valErrs := u.Validate(); len(valErrs) != 0 {
+	if valErrs := validate.ValidateStruct(u); len(valErrs) != 0 {
 		errResponse := svcSpec.NewValidationErrorResonse(valErrs)
 		pC.ServeWithStatus(w, errResponse, 400)
 		return
@@ -64,7 +66,7 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 		id    string
 		err   error
 		objId bson.ObjectId
-		user  *msgspec.UserEntity
+		user  *models.UserModel
 	)
 
 	id = ps.ByName("userId")
@@ -83,11 +85,11 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	pC.Serve(w, &web.UserResource{user})
+	pC.Serve(w, &webmsgspec.UserResource{user})
 }
 
 func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	query := pC.QueryInterfaceMap(r, "query", &msgspec.UserEntity{})
+	query := pC.QueryInterfaceMap(r, "query", &models.UserModel{})
 	order, _ := r.URL.Query()["order"]
 	offset, _ := pC.QueryInt(r, "offset")
 	limit, _ := pC.QueryInt(r, "limit")
@@ -98,7 +100,7 @@ func (pC *UsersController) List(w http.ResponseWriter, r *http.Request, ps httpr
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
 	}
-	pC.Serve(w, &web.UsersResource{users})
+	pC.Serve(w, &webmsgspec.UsersResource{users})
 }
 
 func (pC *UsersController) Delete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -117,5 +119,5 @@ func (pC *UsersController) Delete(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	pC.Serve(w, &web.UsersResource{nil})
+	pC.Serve(w, &webmsgspec.UsersResource{nil})
 }

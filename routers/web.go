@@ -9,9 +9,15 @@ import (
 	"github.com/ulule/limiter"
 	"net/http"
 	"time"
+	"github.com/byrnedo/apibase/config"
 )
 
 func init() {
+
+	encryptionKey, err := config.Conf.GetString("encryption-key")
+	if err != nil {
+		panic("Failed to get encryption-key:" + err.Error())
+	}
 
 	rate, err := limiter.NewRateFromFormatted("5-S")
 	if err != nil {
@@ -26,7 +32,7 @@ func init() {
 	limiterMw := limiter.NewHTTPMiddleware(limiter.NewLimiter(store, rate))
 
 	var rtr = httprouter.New()
-	controllers.RegisterRoutes(rtr, webcontrollers.NewUsersController())
+	controllers.RegisterRoutes(rtr, webcontrollers.NewUsersController(encryptionKey))
 
 	//alice is a tiny package to chain middlewares.
 	handlerChain := alice.New(

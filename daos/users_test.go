@@ -1,15 +1,26 @@
-package models
+package daos
 
 import (
 	"github.com/byrnedo/apibase/db/mongo"
 	"github.com/byrnedo/apibase/dockertest"
 	. "github.com/byrnedo/apibase/logger"
-	"github.com/byrnedo/usersvc/msgspec"
 	gDoc "github.com/fsouza/go-dockerclient"
 	"reflect"
 	"testing"
 	"time"
+	"github.com/byrnedo/usersvc/models"
+	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
+	"gopkg.in/mgo.v2"
+	"github.com/byrnedo/apibase/helpers/stringhelp"
 )
+
+var (
+	session *mgo.Session
+)
+
+func Conn()*mgo.Session{
+	return session.Copy()
+}
 
 const (
 	MongoImage = "mongo:latest"
@@ -36,20 +47,23 @@ func TestMain(m *testing.M) {
 	setupContainer()
 
 	InitLog(func(o *LogOptions) { o.Level = InfoLevel })
-	mongo.Init("mongodb://localhost:"+MongoPort+"/test_users", Trace)
+	session = mongo.Init("mongodb://localhost:"+MongoPort+"/test_users", Trace)
 
-	c := mongo.Conn()
+	c := Conn()
 	c.DB("test_users").DropDatabase()
 	defer c.Close()
 	m.Run()
 
 }
 
-func createUser(m UserModel, t *testing.T) *msgspec.UserEntity {
+func createUser(m UserDAO, t *testing.T) *models.UserModel {
 
-	user, err := m.Create(&msgspec.NewUserDTO{
+	user, err := m.Create(&webmsgspec.NewUserDTO{
 		FirstName: "test",
 		LastName:  "user",
+		Alias:"test",
+		Password:"test",
+		Email: stringhelp.RandString(5) + "@apibase.com",
 	})
 
 	if err != nil {
@@ -60,7 +74,7 @@ func createUser(m UserModel, t *testing.T) *msgspec.UserEntity {
 }
 
 func TestModel(t *testing.T) {
-	m := NewDefaultUserModel()
+	m := &DefaultUserDAO{session.Copy()}
 	defer m.Session.Close()
 
 	user := createUser(m, t)
@@ -73,7 +87,7 @@ func TestModel(t *testing.T) {
 		t.Error("Did not match\nexpected:%+v\n   found:%+v\n", user, foundUser)
 	}
 
-	updUser, err := m.Replace(&msgspec.UpdateUserDTO{
+	updUser, err := m.Replace(&webmsgspec.UpdateUserDTO{
 		ID:        user.ID.Hex(),
 		FirstName: "test",
 		LastName:  "user",
@@ -115,7 +129,7 @@ func TestModel(t *testing.T) {
 		t.Error("Failed to delete user:" + err.Error())
 	}
 
-	var users = []*msgspec.UserEntity{
+	var users = []*models.UserModel{
 		createUser(m, t),
 		createUser(m, t),
 		createUser(m, t),

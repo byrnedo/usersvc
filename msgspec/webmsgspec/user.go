@@ -1,27 +1,32 @@
-package msgspec
+package webmsgspec
 
 import (
 	"errors"
-	"github.com/byrnedo/svccommon/validate"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
-	validator "gopkg.in/bluesuncorp/validator.v8"
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"github.com/byrnedo/usersvc/models"
 )
 
 const (
 	bcryptCost = 10
 )
 
-func encryptPassword(pass string) (string, error) {
+type NewUserResource struct {
+	Data *NewUserDTO `json:"data" validate:"required"`
+}
 
-	password, err := bcrypt.GenerateFromPassword([]byte(pass), bcryptCost)
-	if err != nil {
-		return "", errors.New("Failed to encrypt:" + err.Error())
-	}
-	return string(password), nil
+type UpdatedUserResource struct {
+	Data *UpdateUserDTO `json:"data" validate:"required"`
+}
 
+type UserResource struct {
+	Data *models.UserModel `json:"data"`
+}
+
+type UsersResource struct {
+	Data []*models.UserModel `json:"data"`
 }
 
 type NewUserDTO struct {
@@ -35,7 +40,7 @@ type NewUserDTO struct {
 	UpdateTime   time.Time `json:"updatetime"`
 }
 
-func (nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
+func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
 	var (
 		now = bson.Now()
 		err error
@@ -45,7 +50,7 @@ func (nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
 		return nil, err
 	}
 
-	return &UserEntity{
+	return &models.UserModel{
 		ID:           bson.NewObjectId(),
 		Alias:        nU.Alias,
 		FirstName:    encBson.EncryptedString(nU.FirstName),
@@ -56,10 +61,6 @@ func (nU *NewUserDTO) MapToEntity() (*UserEntity, error) {
 		CreationTime: now,
 		UpdateTime:   now,
 	}, nil
-}
-
-func (u *NewUserDTO) Validate() validator.ValidationErrors {
-	return validate.ValidateStruct(u)
 }
 
 type UpdateUserDTO struct {
@@ -74,7 +75,7 @@ type UpdateUserDTO struct {
 	UpdateTime   time.Time `json:"updatetime"`
 }
 
-func (uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
+func (uU *UpdateUserDTO) MapToEntity() (*models.UserModel, error) {
 
 	var err error
 	if len(uU.Password) > 0 {
@@ -82,7 +83,7 @@ func (uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
 			return nil, err
 		}
 	}
-	return &UserEntity{
+	return &models.UserModel{
 		ID:         bson.ObjectIdHex(uU.ID),
 		Alias:      uU.Alias,
 		FirstName:  encBson.EncryptedString(uU.FirstName),
@@ -94,22 +95,14 @@ func (uU *UpdateUserDTO) MapToEntity() (*UserEntity, error) {
 	}, nil
 }
 
-func (u *UpdateUserDTO) Validate() validator.ValidationErrors {
-	return validate.ValidateStruct(u)
+
+func encryptPassword(pass string) (string, error) {
+
+	password, err := bcrypt.GenerateFromPassword([]byte(pass), bcryptCost)
+	if err != nil {
+		return "", errors.New("Failed to encrypt:" + err.Error())
+	}
+	return string(password), nil
+
 }
 
-type UserEntity struct {
-	ID           bson.ObjectId           `bson:"_id,omitempty" json:"id"`
-	Alias        string                  `json:"alias"`
-	FirstName    encBson.EncryptedString `json:"firstname"`
-	LastName     encBson.EncryptedString `json:"lastname"`
-	Email        string                  `json:"email"`
-	Password     string                  `bson:"password,omitempty" json:"-"`
-	Role         string                  `json:"role"`
-	CreationTime time.Time               `bson:"creationtime,omitempty" json:"creationtime"`
-	UpdateTime   time.Time               `json:"updatetime"`
-}
-
-func (u *UserEntity) Validate() validator.ValidationErrors {
-	return validate.ValidateStruct(u)
-}
