@@ -5,7 +5,6 @@ import (
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 	"github.com/byrnedo/usersvc/models"
 )
 
@@ -30,14 +29,12 @@ type UsersResource struct {
 }
 
 type NewUserDTO struct {
-	Alias        string    `json:"alias"`
+	Alias        string    `json:"alias" validate:"required"`
 	FirstName    string    `json:"firstname"`
 	LastName     string    `json:"lastname"`
-	Email        string    `json:"email"`
-	Password     string    `json:"password"`
-	Role         string    `json:"role"`
-	CreationTime time.Time `json:"creationtime"`
-	UpdateTime   time.Time `json:"updatetime"`
+	Email        string    `json:"email" validate:"required"`
+	Password     string    `json:"password" validate:"required"`
+	Role         string    `json:"role" validate:"required"`
 }
 
 func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
@@ -65,14 +62,12 @@ func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
 
 type UpdateUserDTO struct {
 	ID           string    `json:"id"`
-	Alias        string    `json:"alias"`
+	Alias        string    `json:"alias" validate:"required"`
 	FirstName    string    `json:"firstname"`
 	LastName     string    `json:"lastname"`
-	Email        string    `json:"email"`
-	Password     string    `json:"password"`
-	Role         string    `json:"role"`
-	CreationTime time.Time `json:"creationtime"`
-	UpdateTime   time.Time `json:"updatetime"`
+	Email        string    `json:"email" validate:"required"`
+	Password     string    `json:"password" validate:"required"`
+	Role         string    `json:"role" validate:"required"`
 }
 
 func (uU *UpdateUserDTO) MapToEntity() (*models.UserModel, error) {
