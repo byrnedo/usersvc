@@ -1,4 +1,4 @@
-package web
+package webcontrollers
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	svcSpec "github.com/byrnedo/svccommon/msgspec/web"
 	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec"
-	"github.com/byrnedo/usersvc/msgspec/web"
+	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"

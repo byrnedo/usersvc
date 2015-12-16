@@ -3,7 +3,7 @@
 // DO NOT EDIT!
 
 /*
-	Package mq is a generated protocol buffer package.
+	Package mqmsgspec is a generated protocol buffer package.
 
 	It is generated from these files:
 		user.proto
@@ -12,7 +12,7 @@
 		InnerAuthenticateUserRequest
 		InnerAuthenticateUserResponse
 */
-package mq
+package mqmsgspec
 
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
@@ -91,8 +91,8 @@ func (m *InnerAuthenticateUserResponse) GetAuthenticated() bool {
 }
 
 func init() {
-	proto.RegisterType((*InnerAuthenticateUserRequest)(nil), "mq.InnerAuthenticateUserRequest")
-	proto.RegisterType((*InnerAuthenticateUserResponse)(nil), "mq.InnerAuthenticateUserResponse")
+	proto.RegisterType((*InnerAuthenticateUserRequest)(nil), "mqmsgspec.InnerAuthenticateUserRequest")
+	proto.RegisterType((*InnerAuthenticateUserResponse)(nil), "mqmsgspec.InnerAuthenticateUserResponse")
 }
 func (m *InnerAuthenticateUserRequest) Marshal() (data []byte, err error) {
 	size := m.Size()

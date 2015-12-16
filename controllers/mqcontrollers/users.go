@@ -1,11 +1,11 @@
-package mq
+package mqcontrollers
 
 import (
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
 	"github.com/byrnedo/usersvc/models"
-	"github.com/byrnedo/usersvc/msgspec/mq"
+	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
 	"github.com/nats-io/nats"
 )
 
@@ -17,7 +17,7 @@ type UsersController struct {
 
 func (c *UsersController) GetRoutes() []*r.NatsRoute {
 	return []*r.NatsRoute{
-		r.NewNatsRoute(mq.AuthenticateUserSubject, c.Authenticate),
+		r.NewNatsRoute(mqmsgspec.AuthenticateUserSubject, c.Authenticate),
 	}
 }
 
@@ -40,7 +40,7 @@ func (c *UsersController) Update(m *nats.Msg) {
 func (c *UsersController) Delete(m *nats.Msg) {
 }
 
-func (c *UsersController) Authenticate(subj string, reply string, data *mq.InnerAuthenticateUserRequest) {
+func (c *UsersController) Authenticate(subj string, reply string, data *mqmsgspec.InnerAuthenticateUserRequest) {
 	Info.Println("Got authenticate request:", data)
 	err := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
 
@@ -52,7 +52,7 @@ func (c *UsersController) Authenticate(subj string, reply string, data *mq.Inner
 		valid = false
 		Info.Println("Authentication failed:", err)
 	}
-	response := mq.NewAuthenticateUserResponse(&mq.InnerAuthenticateUserResponse{Authenticated: &valid})
+	response := mqmsgspec.NewAuthenticateUserResponse(&mqmsgspec.InnerAuthenticateUserResponse{Authenticated: &valid})
 	if err := c.natsCon.Publish(reply, data.GetContext(), response); err != nil {
 		Error.Println("Error sending reply:" + err.Error())
 	}

@@ -1,4 +1,4 @@
-package mq
+package mqmsgspec
 
 const (
 	AuthenticateUserSubject = "user.users.authenticate"

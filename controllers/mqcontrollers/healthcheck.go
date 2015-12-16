@@ -1,4 +1,4 @@
-package mq
+package mqcontrollers
 
 import (
 	"github.com/byrnedo/apibase/natsio"

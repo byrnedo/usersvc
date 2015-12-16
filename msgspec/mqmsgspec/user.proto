@@ -1,4 +1,4 @@
-package mq;
+package mqmsgspec;
 
 import "github.com/byrnedo/apibase/natsio/protobuf/nats.proto";
 

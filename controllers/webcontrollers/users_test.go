@@ -1,4 +1,4 @@
-package web
+package webcontrollers
 
 import (
 	"github.com/byrnedo/apibase/controllers"
@@ -11,7 +11,7 @@ import (
 func setup() (*httptest.ResponseRecorder, *mux.Router) {
 
 	rtr := mux.NewRouter().StrictSlash(true)
-	controllers.RegisterMuxRoutes(rtr, &UsersController{})
+	controllers.RegisterRoutes(rtr, &UsersController{})
 	rec := httptest.NewRecorder()
 	return rec, rtr
 }

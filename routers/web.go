@@ -3,7 +3,7 @@ package routers
 import (
 	"github.com/byrnedo/apibase/controllers"
 	"github.com/byrnedo/apibase/middleware"
-	"github.com/byrnedo/usersvc/controllers/web"
+	"github.com/byrnedo/usersvc/controllers/webcontrollers"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 	"github.com/ulule/limiter"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func InitWeb() {
+func init() {
 
 	rate, err := limiter.NewRateFromFormatted("5-S")
 	if err != nil {
@@ -26,7 +26,7 @@ func InitWeb() {
 	limiterMw := limiter.NewHTTPMiddleware(limiter.NewLimiter(store, rate))
 
 	var rtr = httprouter.New()
-	controllers.RegisterRoutes(rtr, web.NewUsersController())
+	controllers.RegisterRoutes(rtr, webcontrollers.NewUsersController())
 
 	//alice is a tiny package to chain middlewares.
 	handlerChain := alice.New(
