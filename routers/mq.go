@@ -1,10 +1,10 @@
 package routers
 
 import (
+	"github.com/byrnedo/apibase/config"
 	"github.com/byrnedo/apibase/controllers"
 	"github.com/byrnedo/apibase/natsio/defaultnats"
 	"github.com/byrnedo/usersvc/controllers/mqcontrollers"
-	"github.com/byrnedo/apibase/config"
 )
 
 func init() {

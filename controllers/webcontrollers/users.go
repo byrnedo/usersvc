@@ -3,17 +3,17 @@ package webcontrollers
 import (
 	"encoding/json"
 	"github.com/byrnedo/apibase/controllers"
+	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 	. "github.com/byrnedo/apibase/logger"
 	routes "github.com/byrnedo/apibase/routes"
 	svcSpec "github.com/byrnedo/svccommon/msgspec/web"
+	"github.com/byrnedo/svccommon/validate"
+	"github.com/byrnedo/usersvc/daos"
 	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
-	"github.com/byrnedo/usersvc/daos"
-	"github.com/byrnedo/svccommon/validate"
-	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 )
 
 type UsersController struct {

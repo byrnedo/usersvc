@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/byrnedo/apibase/config"
+	"github.com/byrnedo/apibase/helpers/envhelp"
 	. "github.com/byrnedo/apibase/logger"
 	_ "github.com/byrnedo/usersvc/routers"
 	"net/http"
-	"github.com/byrnedo/apibase/config"
-	"github.com/byrnedo/apibase/helpers/envhelp"
 )
 
 func main() {
@@ -16,7 +16,6 @@ func main() {
 		port int
 		err  error
 	)
-
 
 	host = config.Conf.GetDefaultString("http.host", "localhost")
 	if port, err = envhelp.GetOrInt("PORT", int(config.Conf.GetDefaultInt("http.port", 9999))); err != nil {

@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"github.com/byrnedo/apibase/config"
 	"github.com/byrnedo/apibase/controllers"
 	"github.com/byrnedo/apibase/middleware"
 	"github.com/byrnedo/usersvc/controllers/webcontrollers"
@@ -9,7 +10,6 @@ import (
 	"github.com/ulule/limiter"
 	"net/http"
 	"time"
-	"github.com/byrnedo/apibase/config"
 )
 
 func init() {

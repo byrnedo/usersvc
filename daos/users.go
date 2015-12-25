@@ -1,20 +1,20 @@
 package daos
+
 import (
-	"gopkg.in/mgo.v2/bson"
-	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
-	"gopkg.in/mgo.v2"
-	"github.com/byrnedo/usersvc/models"
 	"github.com/byrnedo/apibase/helpers/stringhelp"
-	encBson "github.com/maxwellhealth/encryptedbson"
 	. "github.com/byrnedo/apibase/logger"
+	"github.com/byrnedo/usersvc/models"
+	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
+	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
 	collection       = "users"
 	defaultUserEmail = "admin@apibase.com"
 )
-
 
 type UserDAO interface {
 	Find(bson.ObjectId) (*models.UserModel, error)
@@ -29,7 +29,7 @@ type DefaultUserDAO struct {
 	Session *mgo.Session
 }
 
-func init(){
+func init() {
 }
 
 func NewDefaultUserDAO(session *mgo.Session, encryptionKey string) *DefaultUserDAO {

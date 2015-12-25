@@ -1,13 +1,13 @@
 package mqcontrollers
 
 import (
+	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
-	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
-	"github.com/byrnedo/apibase/db/mongo/defaultmongo"
-	"github.com/nats-io/nats"
 	"github.com/byrnedo/usersvc/daos"
+	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
+	"github.com/nats-io/nats"
 )
 
 type UsersController struct {

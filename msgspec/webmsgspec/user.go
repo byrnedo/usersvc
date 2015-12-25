@@ -2,15 +2,16 @@ package webmsgspec
 
 import (
 	"errors"
+	"github.com/byrnedo/usersvc/models"
 	encBson "github.com/maxwellhealth/encryptedbson"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/byrnedo/usersvc/models"
 )
 
 const (
 	bcryptCost = 10
 )
+
 
 type NewUserResource struct {
 	Data *NewUserDTO `json:"data" validate:"required"`
@@ -29,12 +30,12 @@ type UsersResource struct {
 }
 
 type NewUserDTO struct {
-	Alias        string    `json:"alias" validate:"required"`
-	FirstName    string    `json:"firstname"`
-	LastName     string    `json:"lastname"`
-	Email        string    `json:"email" validate:"required"`
-	Password     string    `json:"password" validate:"required"`
-	Role         string    `json:"role" validate:"required"`
+	Alias     string          `json:"alias" validate:"required,alphanum"`
+	FirstName string          `json:"firstname" validate:"omitempty,alpha"`
+	LastName  string          `json:"lastname" validate:"omitempty,alpha"`
+	Email     string          `json:"email" validate:"required,email"`
+	Password  string          `json:"password" validate:"omitempty,min=8"`
+	Role      models.RoleType `json:"role" validate:"required,eq=admin|eq=normal"`
 }
 
 func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
@@ -61,13 +62,13 @@ func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
 }
 
 type UpdateUserDTO struct {
-	ID           string    `json:"id"`
-	Alias        string    `json:"alias" validate:"required"`
-	FirstName    string    `json:"firstname"`
-	LastName     string    `json:"lastname"`
-	Email        string    `json:"email" validate:"required"`
-	Password     string    `json:"password" validate:"required"`
-	Role         string    `json:"role" validate:"required"`
+	ID        string          `json:"id"`
+	Alias     string          `json:"alias" validate:"required,alphanum"`
+	FirstName string          `json:"firstname" validate:"omitempty,alpha"`
+	LastName  string          `json:"lastname" validate:"omitempty,alpha"`
+	Email     string          `json:"email" validate:"required,email"`
+	Password  string          `json:"password" validate:"omitempty,min=8"`
+	Role      models.RoleType `json:"role" validate:"required,eq=admin|eq=normal"`
 }
 
 func (uU *UpdateUserDTO) MapToEntity() (*models.UserModel, error) {
@@ -90,7 +91,6 @@ func (uU *UpdateUserDTO) MapToEntity() (*models.UserModel, error) {
 	}, nil
 }
 
-
 func encryptPassword(pass string) (string, error) {
 
 	password, err := bcrypt.GenerateFromPassword([]byte(pass), bcryptCost)
@@ -100,4 +100,3 @@ func encryptPassword(pass string) (string, error) {
 	return string(password), nil
 
 }
-

@@ -1,11 +1,18 @@
 package models
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	encBson "github.com/maxwellhealth/encryptedbson"
-	"time"
 	"github.com/byrnedo/svccommon/validate"
+	encBson "github.com/maxwellhealth/encryptedbson"
 	"gopkg.in/bluesuncorp/validator.v8"
+	"gopkg.in/mgo.v2/bson"
+	"time"
+)
+
+type RoleType string
+
+const (
+	AdminRole  RoleType = "admin"
+	NormalRole RoleType = "normal"
 )
 
 type UserModel struct {
@@ -15,7 +22,7 @@ type UserModel struct {
 	LastName     encBson.EncryptedString `json:"lastname"`
 	Email        string                  `json:"email"`
 	Password     string                  `bson:"password,omitempty" json:"-"`
-	Role         string                  `json:"role"`
+	Role         RoleType                `json:"role"`
 	CreationTime time.Time               `bson:"creationtime,omitempty" json:"creationtime"`
 	UpdateTime   time.Time               `json:"updatetime"`
 }
@@ -23,4 +30,3 @@ type UserModel struct {
 func (u *UserModel) Validate() validator.ValidationErrors {
 	return validate.ValidateStruct(u)
 }
-

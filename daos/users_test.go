@@ -3,22 +3,22 @@ package daos
 import (
 	"github.com/byrnedo/apibase/db/mongo"
 	"github.com/byrnedo/apibase/dockertest"
+	"github.com/byrnedo/apibase/helpers/stringhelp"
 	. "github.com/byrnedo/apibase/logger"
+	"github.com/byrnedo/usersvc/models"
+	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
 	gDoc "github.com/fsouza/go-dockerclient"
+	"gopkg.in/mgo.v2"
 	"reflect"
 	"testing"
 	"time"
-	"github.com/byrnedo/usersvc/models"
-	"github.com/byrnedo/usersvc/msgspec/webmsgspec"
-	"gopkg.in/mgo.v2"
-	"github.com/byrnedo/apibase/helpers/stringhelp"
 )
 
 var (
 	session *mgo.Session
 )
 
-func Conn()*mgo.Session{
+func Conn() *mgo.Session {
 	return session.Copy()
 }
 
@@ -61,9 +61,9 @@ func createUser(m UserDAO, t *testing.T) *models.UserModel {
 	user, err := m.Create(&webmsgspec.NewUserDTO{
 		FirstName: "test",
 		LastName:  "user",
-		Alias:"test",
-		Password:"test",
-		Email: stringhelp.RandString(5) + "@apibase.com",
+		Alias:     "test",
+		Password:  "test",
+		Email:     stringhelp.RandString(5) + "@apibase.com",
 	})
 
 	if err != nil {
