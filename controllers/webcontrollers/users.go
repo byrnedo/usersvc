@@ -31,6 +31,7 @@ func NewUsersController(encryptionKey string) *UsersController {
 func (pC *UsersController) GetRoutes() []*routes.WebRoute {
 	return []*routes.WebRoute{
 		routes.NewWebRoute("CreateUser", "/api/v1/users", routes.POST, pC.Create),
+		routes.NewWebRoute("ReplaceUser", "/api/v1/users/:userId", routes.PUT, pC.Replace),
 		routes.NewWebRoute("GetUser", "/api/v1/users/:userId", routes.GET, pC.GetOne),
 		routes.NewWebRoute("GetUsers", "/api/v1/users", routes.GET, pC.List),
 		routes.NewWebRoute("DeleteUser", "/api/v1/users/:userId", routes.DELETE, pC.Delete),
@@ -61,6 +62,39 @@ func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request, ps htt
 	pC.ServeWithStatus(w, inserted, 201)
 }
 
+func (pC *UsersController) Replace(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := ps.ByName("userId")
+	if ! bson.IsObjectIdHex(id) {
+		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var u webmsgspec.UpdatedUserResource
+
+	if err := decoder.Decode(&u); err != nil {
+		Error.Println(err)
+		panic("Failed to decode json:" + err.Error())
+	}
+
+	u.Data.ID = id
+
+	if valErrs := validate.ValidateStruct(u); len(valErrs) != 0 {
+		errResponse := svcSpec.NewValidationErrorResonse(valErrs)
+		pC.ServeWithStatus(w, errResponse, 400)
+		return
+	}
+
+
+	inserted, err := pC.userModel.Replace(u.Data)
+	if err != nil {
+		Error.Println("Error updating user:" + err.Error())
+		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(500), 500)
+		return
+	}
+	pC.ServeWithStatus(w, inserted, 200)
+}
+
 func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var (
 		id    string
@@ -70,8 +104,7 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 	)
 
 	id = ps.ByName("userId")
-
-	if bson.IsObjectIdHex(id) == false {
+	if ! bson.IsObjectIdHex(id) {
 		Error.Println("Id is not object id")
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return

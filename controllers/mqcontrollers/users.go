@@ -8,6 +8,7 @@ import (
 	"github.com/byrnedo/usersvc/daos"
 	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
 	"github.com/nats-io/nats"
+	"github.com/byrnedo/svccommon/validate"
 )
 
 type UsersController struct {
@@ -43,16 +44,26 @@ func (c *UsersController) Delete(m *nats.Msg) {
 
 func (c *UsersController) Authenticate(subj string, reply string, data *mqmsgspec.InnerAuthenticateUserRequest) {
 	Info.Println("Got authenticate request:", data)
-	err := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
 
 	var valid bool
-	if err == nil {
-		valid = true
-		Info.Println("Authentication successful")
-	} else {
+	if valErrs := validate.ValidateStruct(data); len(valErrs) != 0 {
+		for key, fieldErr := range valErrs {
+			Error.Println("Validation failed:", key, ":", fieldErr.Tag)
+
+		}
 		valid = false
-		Info.Println("Authentication failed:", err)
+	} else {
+		err := c.userModel.Authenticate(data.GetUsername(), data.GetPassword())
+
+		if err == nil {
+			valid = true
+			Info.Println("Authentication successful")
+		} else {
+			valid = false
+			Info.Println("Authentication failed:", err)
+		}
 	}
+
 	response := mqmsgspec.NewAuthenticateUserResponse(&mqmsgspec.InnerAuthenticateUserResponse{Authenticated: &valid})
 	if err := c.natsCon.Publish(reply, data.GetContext(), response); err != nil {
 		Error.Println("Error sending reply:" + err.Error())
