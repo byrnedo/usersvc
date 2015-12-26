@@ -1,11 +1,12 @@
 package mqmsgspec;
 
 import "github.com/byrnedo/apibase/natsio/protobuf/nats.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 message InnerAuthenticateUserRequest {
     optional protobuf.NatsContext context = 1;
-    optional string username = 2;
-    optional string password = 3;
+    optional string username = 2 [(gogoproto.moretags) = "validate:\"required\""];
+    optional string password = 3 [(gogoproto.moretags) = "validate:\"required\""];
 }
 message InnerAuthenticateUserResponse {
     optional protobuf.NatsContext context = 1;

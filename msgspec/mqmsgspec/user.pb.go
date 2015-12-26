@@ -18,6 +18,7 @@ import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import protobuf "github.com/byrnedo/apibase/natsio/protobuf"
+import _ "github.com/gogo/protobuf/gogoproto"
 
 import io "io"
 
@@ -28,8 +29,8 @@ var _ = math.Inf
 
 type InnerAuthenticateUserRequest struct {
 	Context          *protobuf.NatsContext `protobuf:"bytes,1,opt,name=context" json:"context,omitempty"`
-	Username         *string               `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	Password         *string               `protobuf:"bytes,3,opt,name=password" json:"password,omitempty"`
+	Username         *string               `protobuf:"bytes,2,opt,name=username" json:"username,omitempty" validate:"required"`
+	Password         *string               `protobuf:"bytes,3,opt,name=password" json:"password,omitempty" validate:"required"`
 	XXX_unrecognized []byte                `json:"-"`
 }
 
