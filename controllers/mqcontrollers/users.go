@@ -5,10 +5,10 @@ import (
 	. "github.com/byrnedo/apibase/logger"
 	"github.com/byrnedo/apibase/natsio"
 	r "github.com/byrnedo/apibase/routes"
+	"github.com/byrnedo/svccommon/validate"
 	"github.com/byrnedo/usersvc/daos"
 	"github.com/byrnedo/usersvc/msgspec/mqmsgspec"
 	"github.com/nats-io/nats"
-	"github.com/byrnedo/svccommon/validate"
 )
 
 type UsersController struct {

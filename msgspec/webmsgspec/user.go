@@ -12,7 +12,6 @@ const (
 	bcryptCost = 10
 )
 
-
 type NewUserResource struct {
 	Data *NewUserDTO `json:"data" validate:"required"`
 }
@@ -31,8 +30,8 @@ type UsersResource struct {
 
 type NewUserDTO struct {
 	Alias     string          `json:"alias" validate:"required,alphanum"`
-	FirstName string          `json:"firstname" validate:"omitempty,alpha"`
-	LastName  string          `json:"lastname" validate:"omitempty,alpha"`
+	FirstName string          `json:"first_name" validate:"omitempty,alpha"`
+	LastName  string          `json:"last_name" validate:"omitempty,alpha"`
 	Email     string          `json:"email" validate:"required,email"`
 	Password  string          `json:"password" validate:"omitempty,min=8"`
 	Role      models.RoleType `json:"role" validate:"required,eq=admin|eq=normal"`
@@ -64,8 +63,8 @@ func (nU *NewUserDTO) MapToEntity() (*models.UserModel, error) {
 type UpdateUserDTO struct {
 	ID        string          `json:"id"`
 	Alias     string          `json:"alias" validate:"required,alphanum"`
-	FirstName string          `json:"firstname" validate:"omitempty,alpha"`
-	LastName  string          `json:"lastname" validate:"omitempty,alpha"`
+	FirstName string          `json:"first_name" validate:"omitempty,alpha"`
+	LastName  string          `json:"last_name" validate:"omitempty,alpha"`
 	Email     string          `json:"email" validate:"required,email"`
 	Password  string          `json:"password" validate:"omitempty,min=8"`
 	Role      models.RoleType `json:"role" validate:"required,eq=admin|eq=normal"`

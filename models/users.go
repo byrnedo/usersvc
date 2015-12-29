@@ -18,15 +18,11 @@ const (
 type UserModel struct {
 	ID           bson.ObjectId           `bson:"_id,omitempty" json:"id"`
 	Alias        string                  `json:"alias"`
-	FirstName    encBson.EncryptedString `json:"firstname"`
-	LastName     encBson.EncryptedString `json:"lastname"`
+	FirstName    encBson.EncryptedString `json:"first_name"`
+	LastName     encBson.EncryptedString `json:"last_name"`
 	Email        string                  `json:"email"`
-	Password     string                  `bson:"password,omitempty" json:"-"`
+	Password     string                  `bson:",omitempty" json:"-"`
 	Role         RoleType                `json:"role"`
-	CreationTime time.Time               `bson:"creationtime,omitempty" json:"creationtime"`
-	UpdateTime   time.Time               `json:"updatetime"`
-}
-
-func (u *UserModel) Validate() validator.ValidationErrors {
-	return validate.ValidateStruct(u)
+	CreationTime time.Time               `bson:",omitempty" json:"creation_time"`
+	UpdateTime   time.Time               `json:"update_time"`
 }

@@ -30,11 +30,11 @@ func NewUsersController(encryptionKey string) *UsersController {
 
 func (pC *UsersController) GetRoutes() []*routes.WebRoute {
 	return []*routes.WebRoute{
-		routes.NewWebRoute("CreateUser", "/api/v1/users", routes.POST, pC.Create),
-		routes.NewWebRoute("ReplaceUser", "/api/v1/users/:userId", routes.PUT, pC.Replace),
-		routes.NewWebRoute("GetUser", "/api/v1/users/:userId", routes.GET, pC.GetOne),
-		routes.NewWebRoute("GetUsers", "/api/v1/users", routes.GET, pC.List),
-		routes.NewWebRoute("DeleteUser", "/api/v1/users/:userId", routes.DELETE, pC.Delete),
+		routes.NewWebRoute("CreateUser", "/v1/users", routes.POST, pC.Create),
+		routes.NewWebRoute("ReplaceUser", "/v1/users/:userId", routes.PUT, pC.Replace),
+		routes.NewWebRoute("GetUser", "/v1/users/:userId", routes.GET, pC.GetOne),
+		routes.NewWebRoute("GetUsers", "/v1/users", routes.GET, pC.List),
+		routes.NewWebRoute("DeleteUser", "/v1/users/:userId", routes.DELETE, pC.Delete),
 	}
 }
 
@@ -64,7 +64,7 @@ func (pC *UsersController) Create(w http.ResponseWriter, r *http.Request, ps htt
 
 func (pC *UsersController) Replace(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	id := ps.ByName("userId")
-	if ! bson.IsObjectIdHex(id) {
+	if !bson.IsObjectIdHex(id) {
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return
 	}
@@ -85,7 +85,6 @@ func (pC *UsersController) Replace(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
-
 	inserted, err := pC.userModel.Replace(u.Data)
 	if err != nil {
 		Error.Println("Error updating user:" + err.Error())
@@ -104,7 +103,7 @@ func (pC *UsersController) GetOne(w http.ResponseWriter, r *http.Request, ps htt
 	)
 
 	id = ps.ByName("userId")
-	if ! bson.IsObjectIdHex(id) {
+	if !bson.IsObjectIdHex(id) {
 		Error.Println("Id is not object id")
 		pC.ServeWithStatus(w, svcSpec.NewErrorResponse().AddCodeError(404), 404)
 		return

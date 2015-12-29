@@ -1,0 +1,6 @@
+#!/bin/bash
+
+[ ! -d dev-stack ] && git clone https://github.com/byrnedo/dev-stack.git; (cd dev-stack && git pull)
+
+docker-compose -f ./dev-stack/discovery/docker-compose.yml -f ./dev-stack/infra/docker-compose.yml -f docker-compose.yml $*
+
